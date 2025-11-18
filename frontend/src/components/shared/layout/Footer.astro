@@ -1,0 +1,106 @@
+---
+// No props needed
+---
+
+<footer class="border-t bg-background">
+  <div class="container py-8 md:py-12">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <!-- Brand -->
+      <div class="col-span-1 md:col-span-2">
+        <a href="/" class="flex items-center space-x-2 mb-4">
+          <img src="/logo.png" alt="Ailurus" class="h-8 w-8 pixel-art" />
+          <span class="font-bold text-lg">Ailurus</span>
+        </a>
+        <p class="text-sm text-muted-foreground max-w-xs">
+          Documentation that evolves with your code. Framework moderno con Astro
+          + NestJS.
+        </p>
+      </div>
+
+      <!-- Documentation -->
+      <div>
+        <h3 class="font-semibold mb-3">Documentación</h3>
+        <ul class="space-y-2 text-sm text-muted-foreground">
+          <li>
+            <a href="/docs" class="hover:text-foreground transition-colors"
+              >Inicio</a
+            >
+          </li>
+          <li>
+            <a
+              href="/docs/getting-started"
+              class="hover:text-foreground transition-colors">Getting Started</a
+            >
+          </li>
+          <li>
+            <a
+              href="/docs/architecture"
+              class="hover:text-foreground transition-colors">Arquitectura</a
+            >
+          </li>
+          <li>
+            <a href="/docs/api" class="hover:text-foreground transition-colors"
+              >API Reference</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <!-- Links -->
+      <div>
+        <h3 class="font-semibold mb-3">Links</h3>
+        <ul class="space-y-2 text-sm text-muted-foreground">
+          <li>
+            <a
+              href="https://github.com/yourusername/ailurus"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-foreground transition-colors">GitHub</a
+            >
+          </li>
+          <li>
+            <a href="/search" class="hover:text-foreground transition-colors"
+              >Buscar</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://twitter.com/ailurus"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-foreground transition-colors">Twitter</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://discord.gg/ailurus"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-foreground transition-colors">Discord</a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      class="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4"
+    >
+      <p class="text-sm text-muted-foreground">
+        © 2024 Ailurus. Built with <span class="text-ailurus-red">♥</span> by the
+        community.
+      </p>
+      <div class="flex items-center gap-4 text-sm text-muted-foreground">
+        <a href="/privacy" class="hover:text-foreground transition-colors"
+          >Privacy</a
+        >
+        <a href="/terms" class="hover:text-foreground transition-colors"
+          >Terms</a
+        >
+        <a href="/license" class="hover:text-foreground transition-colors"
+          >MIT License</a
+        >
+      </div>
+    </div>
+  </div>
+</footer>

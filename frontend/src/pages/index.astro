@@ -1,11 +1,359 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Layout from "@/layouts/Layout.astro";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { BookOpen, Search, Edit3, Zap, GitBranch, Users } from "lucide-react";
 ---
 
-<Layout>
-	<Welcome />
+<Layout
+  title="Ailurus - Documentation Framework"
+  description="Documentation that evolves with your code. Modern framework built with Astro + NestJS."
+>
+  <!-- Hero Section - Framework Overview -->
+  <section
+    class="py-20 px-4 bg-gradient-to-br from-background via-background to-ailurus-cream/20 dark:to-ailurus-dark/20"
+  >
+    <div class="container mx-auto max-w-6xl">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <!-- Left: Framework Info -->
+        <div>
+          <Badge variant="secondary" className="mb-4">
+            Open Source Framework
+          </Badge>
+
+          <h1 class="text-4xl md:text-5xl font-bold mb-6">
+            El framework de documentación que
+            <span class="ailurus-text-gradient">
+              evoluciona con tu código
+            </span>
+          </h1>
+
+          <p class="text-lg text-muted-foreground mb-6">
+            Ailurus es un framework moderno construido con <strong>Astro</strong
+            > y <strong>NestJS</strong>
+            que combina la simplicidad de Markdown con la potencia de la colaboración
+            en tiempo real.
+          </p>
+
+          <div class="flex flex-col gap-3 mb-8">
+            <div class="flex items-center gap-2 text-muted-foreground">
+              <div class="h-1.5 w-1.5 rounded-full bg-ailurus-orange"></div>
+              <span>SSR ultrarrápido con Astro para SEO perfecto</span>
+            </div>
+            <div class="flex items-center gap-2 text-muted-foreground">
+              <div class="h-1.5 w-1.5 rounded-full bg-ailurus-orange"></div>
+              <span>Backend escalable con NestJS y TypeScript</span>
+            </div>
+            <div class="flex items-center gap-2 text-muted-foreground">
+              <div class="h-1.5 w-1.5 rounded-full bg-ailurus-orange"></div>
+              <span>Búsqueda full-text con SQLite FTS5</span>
+            </div>
+            <div class="flex items-center gap-2 text-muted-foreground">
+              <div class="h-1.5 w-1.5 rounded-full bg-ailurus-orange"></div>
+              <span>Deploy simple: Docker, Node.js o estático</span>
+            </div>
+          </div>
+
+          <div class="flex gap-4 flex-wrap">
+            <a
+              href="/docs"
+              class="inline-flex items-center justify-center rounded-md bg-ailurus-red px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-ailurus-red/90 h-11"
+            >
+              Comenzar
+            </a>
+            <a
+              href="/docs/architecture"
+              class="inline-flex items-center justify-center rounded-md border border-input bg-background px-8 py-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground h-11"
+            >
+              Ver Arquitectura
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: Code Preview -->
+        <div class="relative">
+          <Card className="bg-card/50 backdrop-blur">
+            <CardHeader>
+              <div
+                class="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <div class="flex gap-1.5">
+                  <div class="h-3 w-3 rounded-full bg-red-500"></div>
+                  <div class="h-3 w-3 rounded-full bg-yellow-500"></div>
+                  <div class="h-3 w-3 rounded-full bg-green-500"></div>
+                </div>
+                <span>Quick Start</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <pre
+                class="text-sm overflow-x-auto font-mono"><code>{`# Instalar Ailurus CLI
+npm install -g ailurus
+
+# Crear nuevo proyecto
+ailurus init my-docs
+
+# Iniciar servidor de desarrollo
+cd my-docs
+ailurus dev
+
+# ¡Listo! 🚀
+# Abre http://localhost:4321`}</code></pre>
+            </CardContent>
+          </Card>
+
+          <!-- Decorative elements -->
+          <div
+            class="absolute -z-10 top-10 -right-10 h-72 w-72 rounded-full bg-ailurus-orange/10 blur-3xl"
+          >
+          </div>
+          <div
+            class="absolute -z-10 -bottom-10 -left-10 h-72 w-72 rounded-full bg-ailurus-red/10 blur-3xl"
+          >
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-20 px-4">
+    <div class="container mx-auto max-w-6xl">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">
+          Todo lo que necesitas para documentar
+        </h2>
+        <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Ailurus incluye todas las herramientas que necesitas para crear,
+          gestionar y compartir documentación de calidad.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Feature 1 -->
+        <Card
+          className="border-2 hover:border-ailurus-red/50 transition-colors"
+        >
+          <CardHeader>
+            <div
+              class="h-12 w-12 rounded-lg bg-ailurus-red/10 flex items-center justify-center mb-4"
+            >
+              <BookOpen className="h-6 w-6 text-ailurus-red" />
+            </div>
+            <CardTitle>Markdown First</CardTitle>
+            <CardDescription>
+              Escribe documentación con Markdown. Soporte para código con syntax
+              highlighting, tablas, y más.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <!-- Feature 2 -->
+        <Card
+          className="border-2 hover:border-ailurus-orange/50 transition-colors"
+        >
+          <CardHeader>
+            <div
+              class="h-12 w-12 rounded-lg bg-ailurus-orange/10 flex items-center justify-center mb-4"
+            >
+              <Search className="h-6 w-6 text-ailurus-orange" />
+            </div>
+            <CardTitle>Búsqueda Potente</CardTitle>
+            <CardDescription>
+              Full-text search con SQLite FTS5. Encuentra cualquier contenido al
+              instante con búsqueda inteligente.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <!-- Feature 3 -->
+        <Card
+          className="border-2 hover:border-ailurus-brown/50 transition-colors"
+        >
+          <CardHeader>
+            <div
+              class="h-12 w-12 rounded-lg bg-ailurus-brown/10 flex items-center justify-center mb-4"
+            >
+              <Edit3 className="h-6 w-6 text-ailurus-brown" />
+            </div>
+            <CardTitle>Editor Integrado</CardTitle>
+            <CardDescription>
+              Editor Markdown con preview en tiempo real. Auto-save y
+              sincronización automática.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <!-- Feature 4 -->
+        <Card
+          className="border-2 hover:border-ailurus-red/50 transition-colors"
+        >
+          <CardHeader>
+            <div
+              class="h-12 w-12 rounded-lg bg-ailurus-red/10 flex items-center justify-center mb-4"
+            >
+              <Zap className="h-6 w-6 text-ailurus-red" />
+            </div>
+            <CardTitle>Ultra Rápido</CardTitle>
+            <CardDescription>
+              SSR con Astro + Islands Architecture. Carga inicial &lt; 100ms,
+              navegación instantánea.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <!-- Feature 5 -->
+        <Card
+          className="border-2 hover:border-ailurus-orange/50 transition-colors"
+        >
+          <CardHeader>
+            <div
+              class="h-12 w-12 rounded-lg bg-ailurus-orange/10 flex items-center justify-center mb-4"
+            >
+              <GitBranch className="h-6 w-6 text-ailurus-orange" />
+            </div>
+            <CardTitle>Versionado</CardTitle>
+            <CardDescription>
+              Control de versiones incorporado. Historial completo, diff view y
+              rollback fácil.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <!-- Feature 6 -->
+        <Card
+          className="border-2 hover:border-ailurus-brown/50 transition-colors"
+        >
+          <CardHeader>
+            <div
+              class="h-12 w-12 rounded-lg bg-ailurus-brown/10 flex items-center justify-center mb-4"
+            >
+              <Users className="h-6 w-6 text-ailurus-brown" />
+            </div>
+            <CardTitle>Colaboración</CardTitle>
+            <CardDescription>
+              Edición colaborativa en tiempo real con WebSocket. Múltiples
+              usuarios, sin conflictos.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Popular Docs Section -->
+  <section class="py-20 px-4 bg-muted/50">
+    <div class="container mx-auto max-w-6xl">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">
+          Documentación Popular
+        </h2>
+        <p class="text-lg text-muted-foreground">
+          Los artículos más visitados de nuestra documentación
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Doc 1 -->
+        <a href="/docs/getting-started" class="group">
+          <Card className="h-full hover:shadow-lg transition-all">
+            <CardHeader>
+              <Badge variant="secondary" className="w-fit mb-2"
+                >Getting Started</Badge
+              >
+              <CardTitle
+                className="group-hover:text-ailurus-red transition-colors"
+              >
+                Instalación y Setup
+              </CardTitle>
+              <CardDescription>
+                Aprende a instalar y configurar Ailurus en menos de 5 minutos.
+                Incluye ejemplos y troubleshooting.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div
+                class="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <span>📖 5 min lectura</span>
+                <span>•</span>
+                <span>👀 1.2k vistas</span>
+              </div>
+            </CardContent>
+          </Card>
+        </a>
+
+        <!-- Doc 2 -->
+        <a href="/docs/architecture" class="group">
+          <Card className="h-full hover:shadow-lg transition-all">
+            <CardHeader>
+              <Badge variant="secondary" className="w-fit mb-2"
+                >Architecture</Badge
+              >
+              <CardTitle
+                className="group-hover:text-ailurus-red transition-colors"
+              >
+                Arquitectura del Sistema
+              </CardTitle>
+              <CardDescription>
+                Diseño técnico de Ailurus: frontend Astro, backend NestJS, base
+                de datos SQLite, y más.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div
+                class="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <span>📖 12 min lectura</span>
+                <span>•</span>
+                <span>👀 856 vistas</span>
+              </div>
+            </CardContent>
+          </Card>
+        </a>
+
+        <!-- Doc 3 -->
+        <a href="/docs/markdown-guide" class="group">
+          <Card className="h-full hover:shadow-lg transition-all">
+            <CardHeader>
+              <Badge variant="secondary" className="w-fit mb-2">Guide</Badge>
+              <CardTitle
+                className="group-hover:text-ailurus-red transition-colors"
+              >
+                Markdown Guide
+              </CardTitle>
+              <CardDescription>
+                Guía completa de Markdown con ejemplos: syntax highlighting,
+                tablas, alerts, y componentes custom.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div
+                class="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <span>📖 8 min lectura</span>
+                <span>•</span>
+                <span>👀 634 vistas</span>
+              </div>
+            </CardContent>
+          </Card>
+        </a>
+      </div>
+
+      <div class="text-center mt-8">
+        <a
+          href="/docs"
+          class="inline-flex items-center justify-center rounded-md border border-input bg-background px-6 py-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+        >
+          Ver toda la documentación →
+        </a>
+      </div>
+    </div>
+  </section>
 </Layout>

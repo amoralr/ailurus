@@ -1,22 +1,73 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
-</html>
+---
+import Header from "@/components/shared/layout/Header.astro";
+import Footer from "@/components/shared/layout/Footer.astro";
+import { ThemeToggle } from "@/components/shared/layout/ThemeToggle";
+import "@/styles/global.css";
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Ailurus - Documentation Framework",
+  description = "Documentation that evolves with your code. Modern framework built with Astro + NestJS.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+
+    <title>{title}</title>
+
+    <!-- Theme Script (runs before page renders to avoid flash) -->
+    <script is:inline>
+      const theme =
+        localStorage.getItem("theme") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light");
+      document.documentElement.classList.toggle("dark", theme === "dark");
+    </script>
+  </head>
+  <body>
+    <div class="relative flex min-h-screen flex-col">
+      <Header />
+
+      <main class="flex-1">
+        <slot />
+      </main>
+
+      <Footer />
+    </div>
+
+    <!-- Mount ThemeToggle React Component -->
+    <script>
+      // @ts-ignore
+      import { ThemeToggle } from "@/components/shared/layout/ThemeToggle";
+      // @ts-ignore
+      import { createRoot } from "react-dom/client";
+      // @ts-ignore
+      import { createElement } from "react";
+
+      const mountPoint = document.getElementById("theme-toggle-mount");
+      if (mountPoint) {
+        const root = createRoot(mountPoint);
+        root.render(createElement(ThemeToggle));
+      }
+    </script>
+  </body>
+</html>

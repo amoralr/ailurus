@@ -1,0 +1,128 @@
+---
+// No props needed for now
+---
+
+<header
+  class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+>
+  <div class="container flex h-16 items-center">
+    <!-- Logo -->
+    <a href="/" class="flex items-center space-x-2 mr-6">
+      <img src="/logo.png" alt="Ailurus" class="h-8 w-8 pixel-art" />
+      <span class="font-bold text-lg hidden sm:inline-block">Ailurus</span>
+    </a>
+
+    <!-- Navigation Desktop -->
+    <nav
+      class="hidden md:flex items-center space-x-6 text-sm font-medium flex-1"
+    >
+      <a
+        href="/docs"
+        class="transition-colors hover:text-foreground/80 text-foreground/60"
+      >
+        Documentación
+      </a>
+      <a
+        href="/search"
+        class="transition-colors hover:text-foreground/80 text-foreground/60"
+      >
+        Buscar
+      </a>
+      <a
+        href="https://github.com/yourusername/ailurus"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="transition-colors hover:text-foreground/80 text-foreground/60"
+      >
+        GitHub
+      </a>
+    </nav>
+
+    <!-- Right Side Actions -->
+    <div class="flex flex-1 items-center justify-end space-x-2">
+      <!-- Search Icon (Desktop) -->
+      <a
+        href="/search"
+        class="hidden md:inline-flex items-center justify-center rounded-md text-sm font-medium h-9 w-9 hover:bg-accent hover:text-accent-foreground"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+        <span class="sr-only">Buscar</span>
+      </a>
+
+      <!-- Theme Toggle -->
+      <div id="theme-toggle-mount"></div>
+
+      <!-- Mobile Menu Button -->
+      <button
+        id="mobile-menu-button"
+        class="md:hidden inline-flex items-center justify-center rounded-md text-sm font-medium h-9 w-9 hover:bg-accent hover:text-accent-foreground"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="4" x2="20" y1="12" y2="12"></line>
+          <line x1="4" x2="20" y1="6" y2="6"></line>
+          <line x1="4" x2="20" y1="18" y2="18"></line>
+        </svg>
+        <span class="sr-only">Menú</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-t">
+    <nav class="container py-4 flex flex-col space-y-3">
+      <a
+        href="/docs"
+        class="text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60"
+      >
+        Documentación
+      </a>
+      <a
+        href="/search"
+        class="text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60"
+      >
+        Buscar
+      </a>
+      <a
+        href="https://github.com/yourusername/ailurus"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60"
+      >
+        GitHub
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  // Mobile menu toggle
+  const button = document.getElementById("mobile-menu-button");
+  const menu = document.getElementById("mobile-menu");
+
+  button?.addEventListener("click", () => {
+    menu?.classList.toggle("hidden");
+  });
+</script>
