@@ -1,26 +1,10 @@
 import { Moon, Sun } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useStore } from '@nanostores/react';
 import { Button } from '@/components/ui/button';
+import { themeStore, toggleTheme } from '@/shared/stores/theme.store';
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-
-  useEffect(() => {
-    // Check localStorage or system preference
-    const stored = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = stored || (prefersDark ? 'dark' : 'light');
-    
-    setTheme(initialTheme);
-    document.documentElement.classList.toggle('dark', initialTheme === 'dark');
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
-  };
+  const theme = useStore(themeStore);
 
   return (
     <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">

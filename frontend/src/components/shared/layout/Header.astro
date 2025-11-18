@@ -1,5 +1,5 @@
 ---
-// No props needed for now
+import { ThemeToggle } from "./ThemeToggle";
 ---
 
 <header
@@ -63,7 +63,7 @@
       </a>
 
       <!-- Theme Toggle -->
-      <div id="theme-toggle-mount"></div>
+      <ThemeToggle client:load />
 
       <!-- Mobile Menu Button -->
       <button

@@ -53,21 +53,5 @@ const {
 
       <Footer />
     </div>
-
-    <!-- Mount ThemeToggle React Component -->
-    <script>
-      // @ts-ignore
-      import { ThemeToggle } from "@/components/shared/layout/ThemeToggle";
-      // @ts-ignore
-      import { createRoot } from "react-dom/client";
-      // @ts-ignore
-      import { createElement } from "react";
-
-      const mountPoint = document.getElementById("theme-toggle-mount");
-      if (mountPoint) {
-        const root = createRoot(mountPoint);
-        root.render(createElement(ThemeToggle));
-      }
-    </script>
   </body>
 </html>
