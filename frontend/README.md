@@ -7,15 +7,12 @@ Sistema de documentación moderno construido con **Astro** + **React** + **Tailw
 ```
 frontend/src/
 ├── components/
-│   ├── shared/layout/       # Componentes de layout compartidos
-│   │   ├── Header.astro     # Header con navegación
-│   │   ├── Footer.astro     # Footer con links
-│   │   └── ThemeToggle.tsx  # Toggle de tema (React)
-│   └── ui/                  # Componentes UI de shadcn
-│       ├── badge.tsx
-│       ├── button.tsx
-│       ├── card.tsx
-│       └── separator.tsx
+│   ├── ui/                  # Componentes UI de shadcn
+│   │   ├── badge.tsx
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   └── separator.tsx
+│   └── Welcome.astro        # Componente de ejemplo
 ├── layouts/
 │   └── Layout.astro         # Layout base de la aplicación
 ├── lib/
@@ -23,6 +20,10 @@ frontend/src/
 ├── pages/
 │   └── index.astro          # Landing page
 ├── shared/
+│   ├── components/layout/   # Componentes de layout compartidos
+│   │   ├── Header.astro     # Header con navegación
+│   │   ├── Footer.astro     # Footer con links
+│   │   └── ThemeToggle.tsx  # Toggle de tema (React)
 │   ├── stores/              # Estado global (Nanostores)
 │   │   └── theme.store.ts   # Store del tema light/dark
 │   └── utils/               # Utilidades compartidas
