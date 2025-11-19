@@ -1,0 +1,55 @@
+---
+import Layout from "./Layout.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<Layout title={title} description={description}>
+  <div class="docs-layout">
+    <slot name="sidebar" />
+
+    <main class="docs-main">
+      <slot />
+    </main>
+
+    <slot name="toc" />
+  </div>
+</Layout>
+
+<style is:global>
+  .docs-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 250px;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  .docs-main {
+    max-width: 900px;
+    width: 100%;
+    padding: 2rem;
+    margin: 0 auto;
+  }
+
+  /* Responsive */
+  @media (max-width: 1440px) {
+    .docs-layout {
+      grid-template-columns: 280px 1fr;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .docs-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .docs-main {
+      padding: 1.5rem 1rem;
+    }
+  }
+</style>

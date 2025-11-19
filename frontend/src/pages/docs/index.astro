@@ -1,0 +1,20 @@
+---
+import DocsLayout from "@/layouts/DocsLayout.astro";
+import Sidebar from "@/shared/components/layout/Sidebar.astro";
+import DocumentList from "@/documents/components/DocumentList.astro";
+import { MOCK_DOCUMENTS } from "@/mocks";
+
+// Filter only published documents
+const publishedDocs = MOCK_DOCUMENTS.filter(
+  (doc) => doc.status === "published"
+);
+---
+
+<DocsLayout
+  title="Documentación - Ailurus"
+  description="Explora toda la documentación de Ailurus"
+>
+  <Sidebar slot="sidebar" />
+
+  <DocumentList documents={publishedDocs} />
+</DocsLayout>

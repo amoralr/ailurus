@@ -1,0 +1,72 @@
+---
+import type { MockDocument } from "@/mocks";
+import "./DocumentList.css";
+
+interface Props {
+  documents: MockDocument[];
+}
+
+const { documents } = Astro.props;
+
+// Group by category
+const groupedDocs = documents.reduce(
+  (acc, doc) => {
+    if (!acc[doc.category]) {
+      acc[doc.category] = [];
+    }
+    acc[doc.category].push(doc);
+    return acc;
+  },
+  {} as Record<string, MockDocument[]>
+);
+
+// Format date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+---
+
+<div class="document-list">
+  <div class="list-header">
+    <h1>Documentación</h1>
+    <p class="subtitle">
+      Explora nuestra biblioteca completa de guías y recursos
+    </p>
+  </div>
+
+  {
+    Object.entries(groupedDocs).map(([category, docs]) => (
+      <section class="category-section">
+        <h2 class="category-title">{category}</h2>
+        <div class="docs-grid">
+          {docs.map((doc) => (
+            <a href={`/docs/${doc.slug}`} class="doc-card-link">
+              <article class="doc-card">
+                <header class="doc-card-header">
+                  <div class="card-meta">
+                    <span class="badge">{doc.category}</span>
+                    <time class="update-date" datetime={doc.updatedAt}>
+                      {formatDate(doc.updatedAt)}
+                    </time>
+                  </div>
+                  <h3 class="doc-title">{doc.title}</h3>
+                </header>
+                <div class="doc-card-content">
+                  <p class="doc-excerpt">{doc.excerpt}</p>
+                </div>
+                <footer class="doc-footer">
+                  <span class="read-more">Leer más →</span>
+                </footer>
+              </article>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+</div>

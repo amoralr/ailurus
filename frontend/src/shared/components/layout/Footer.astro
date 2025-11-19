@@ -1,5 +1,5 @@
 ---
-// No props needed
+const currentYear = new Date().getFullYear();
 ---
 
 <footer class="border-t bg-background">
@@ -87,8 +87,9 @@
       class="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4"
     >
       <p class="text-sm text-muted-foreground">
-        © 2024 Ailurus. Built with <span class="text-ailurus-red">♥</span> by the
-        community.
+        © {currentYear} Ailurus. Built with <span class="text-ailurus-red"
+          >♥</span
+        > by the community.
       </p>
       <div class="flex items-center gap-4 text-sm text-muted-foreground">
         <a href="/privacy" class="hover:text-foreground transition-colors"
