@@ -40,10 +40,10 @@ import { ThemeToggle } from "./ThemeToggle";
 
     <!-- Right Side Actions -->
     <div class="flex flex-1 items-center justify-end space-x-2">
-      <!-- Search Icon (Desktop) -->
-      <a
-        href="/search"
-        class="hidden md:inline-flex items-center justify-center rounded-md text-sm font-medium h-9 w-9 hover:bg-accent hover:text-accent-foreground"
+      <!-- Quick Search Button (opens /search page) -->
+      <button
+        onclick="window.location.href='/search'"
+        class="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -59,8 +59,14 @@ import { ThemeToggle } from "./ThemeToggle";
           <circle cx="11" cy="11" r="8"></circle>
           <path d="m21 21-4.3-4.3"></path>
         </svg>
+        <span>Buscar...</span>
+        <kbd
+          class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
+        >
+          <span class="text-xs">⌘</span>K
+        </kbd>
         <span class="sr-only">Buscar</span>
-      </a>
+      </button>
 
       <!-- Theme Toggle -->
       <ThemeToggle client:load />
@@ -121,6 +127,14 @@ import { ThemeToggle } from "./ThemeToggle";
   // Mobile menu toggle
   const button = document.getElementById("mobile-menu-button");
   const menu = document.getElementById("mobile-menu");
+
+  // Keyboard shortcut for search (Cmd+K / Ctrl+K)
+  document.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault();
+      window.location.href = "/search";
+    }
+  });
 
   button?.addEventListener("click", () => {
     menu?.classList.toggle("hidden");

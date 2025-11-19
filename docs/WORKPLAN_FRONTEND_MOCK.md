@@ -382,19 +382,19 @@ export default function ThemeToggle() {
 
 ---
 
-## 🔍 **FASE 4: Búsqueda** (2 días)
+## 🔍 **FASE 4: Búsqueda** ✅ (COMPLETADO)
 
 ### **Tareas**
 
-- [ ] **4.1** Crear página search/index.astro
-- [ ] **4.2** Implementar SearchBar.tsx con debounce
-- [ ] **4.3** Implementar búsqueda client-side en mock data
-- [ ] **4.4** Implementar highlighting de términos
-- [ ] **4.5** Crear store de búsqueda (search.store.ts)
-- [ ] **4.6** Implementar "sin resultados" state
-- [ ] **4.7** Agregar SearchBar en Header global
+- [x] **4.1** Crear página search/index.astro
+- [x] **4.2** Implementar SearchBar.tsx con debounce
+- [x] **4.3** Implementar búsqueda client-side en mock data
+- [x] **4.4** Implementar highlighting de términos
+- [x] **4.5** Crear store de búsqueda (search.store.ts)
+- [x] **4.6** Implementar "sin resultados" state
+- [x] **4.7** Agregar SearchBar en Header global con atajo Cmd+K
 
-**Entregable**: Búsqueda funcional con filtrado client-side en mock data
+**Entregable**: ✅ Búsqueda funcional con filtrado client-side, highlighting y keyboard shortcuts
 
 ---
 
@@ -444,7 +444,7 @@ export default function ThemeToggle() {
 ✅ Homepage con hero y features  
 ✅ Lista de documentos con categorías  
 ✅ Vista de documento con TOC y navegación  
-❌ Búsqueda funcional client-side  
+✅ Búsqueda funcional client-side  
 ❌ Editor básico con auto-save y preview  
 ✅ Dark mode con persistencia  
 ✅ Diseño responsive  
@@ -553,12 +553,12 @@ frontend/
 | Fase 1: Sistema de Diseño | 2-3 días | 3-5   | ✅     |
 | Fase 2: Homepage          | 1 día    | 6     | ✅     |
 | Fase 3: Documentación     | 3-4 días | 7-10  | ✅     |
-| Fase 4: Búsqueda          | 2 días   | 11-12 | ⏸️     |
+| Fase 4: Búsqueda          | 2 días   | 11-12 | ✅     |
 | Fase 5: Editor            | 3-4 días | 13-16 | ⏸️     |
 | Fase 6: Polish            | 2-3 días | 17-19 | ⏸️     |
 
 **Total**: 14-19 días laborables (2-3 semanas)  
-**Completado**: 7-10 días (Fases 0, 1, 2, 3) ✅
+**Completado**: 9-12 días (Fases 0, 1, 2, 3, 4) ✅
 
 ---
 
@@ -609,15 +609,16 @@ Una vez completado el frontend con mocks:
 - [x] Sistema de documentación completo
 - [x] Markdown rendering con syntax highlighting
 - [x] TOC con scroll spy
-- [ ] Búsqueda con diferentes queries
+- [x] Búsqueda con diferentes queries
+- [x] Keyboard shortcut (Cmd+K) para búsqueda
 - [ ] Editor: escribir, guardar, cancelar
 - [x] Responsive en mobile, tablet, desktop
-- [ ] Accesibilidad básica (keyboard navigation)
+- [x] Accesibilidad básica (keyboard navigation para búsqueda)
 
 ---
 
 **Última actualización**: 19 de noviembre, 2025  
-**Versión**: 1.2.0 - Fases 0, 1, 2, 3 completadas
+**Versión**: 1.3.0 - Fases 0, 1, 2, 3, 4 completadas
 
 ---
 
