@@ -201,7 +201,7 @@ export const MOCK_FOLDERS: FolderNode[] = [
             icon: '📖',
             path: 'Equipo/Proyecto/Guides',
             order: 5,
-            count: 3,
+            count: 4,
             children: [
               {
                 id: 'doc-editor-guide',
@@ -220,12 +220,20 @@ export const MOCK_FOLDERS: FolderNode[] = [
                 order: 2,
               },
               {
+                id: 'doc-images-guide',
+                name: 'Guía de Imágenes',
+                type: 'file',
+                slug: 'images-guide',
+                path: 'Equipo/Proyecto/Guides/Guía de Imágenes',
+                order: 3,
+              },
+              {
                 id: 'doc-deployment',
                 name: 'Deployment Guide',
                 type: 'file',
                 slug: 'deployment',
                 path: 'Equipo/Proyecto/Guides/Deployment Guide',
-                order: 3,
+                order: 4,
               },
             ],
           },

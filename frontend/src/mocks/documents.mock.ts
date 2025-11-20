@@ -1997,4 +1997,179 @@ pm2 monit
 - [Backup Strategy](/docs/backup-strategy)
 `
   },
+  // Images Guide
+  {
+    id: 20,
+    slug: 'images-guide',
+    title: 'Guía de Imágenes en Markdown',
+    category: 'Guides',
+    subcategory: 'Markdown',
+    path: 'Equipo/Proyecto/Guides/Guía de Imágenes',
+    status: 'published',
+    createdAt: '2025-11-20T14:00:00Z',
+    updatedAt: '2025-11-20T14:00:00Z',
+    createdBy: 'Antonio Moral',
+    excerpt: 'Aprende a insertar y optimizar imágenes en tus documentos.',
+    content: `# Guía de Imágenes en Markdown
+
+Esta guía te mostrará cómo usar imágenes en tus documentos Ailurus.
+
+## Sintaxis Básica
+
+Para insertar una imagen en markdown:
+
+\`\`\`markdown
+![Alt text](url-de-la-imagen.jpg)
+\`\`\`
+
+### Con título (caption)
+
+\`\`\`markdown
+![Alt text](url-de-la-imagen.jpg "Título de la imagen")
+\`\`\`
+
+El título se mostrará como caption debajo de la imagen.
+
+## Ejemplos de Uso
+
+### Imagen Simple
+
+\`\`\`markdown
+![Logo Ailurus](https://placehold.co/600x400/667eea/ffffff/png?text=Ailurus+Logo)
+\`\`\`
+
+![Logo Ailurus](https://placehold.co/600x400/667eea/ffffff/png?text=Ailurus+Logo)
+
+### Imagen con Caption
+
+\`\`\`markdown
+![Arquitectura del Sistema](https://placehold.co/800x500/667eea/ffffff/png?text=System+Architecture "Diagrama de arquitectura del sistema Ailurus")
+\`\`\`
+
+![Arquitectura del Sistema](https://placehold.co/800x500/667eea/ffffff/png?text=System+Architecture "Diagrama de arquitectura del sistema Ailurus")
+
+### Imagen de Diagrama
+
+\`\`\`markdown
+![Flujo de Datos](https://placehold.co/700x450/667eea/ffffff/png?text=Data+Flow "Flujo de datos entre frontend y backend")
+\`\`\`
+
+![Flujo de Datos](https://placehold.co/700x450/667eea/ffffff/png?text=Data+Flow "Flujo de datos entre frontend y backend")
+
+## Características
+
+### ✅ Lazy Loading
+
+Todas las imágenes se cargan con \`loading="lazy"\` para optimizar el rendimiento.
+
+### ✅ Lightbox
+
+Haz clic en cualquier imagen para verla en tamaño completo. Usa:
+- **Click** en la imagen o fondo para cerrar
+- **ESC** para cerrar
+- **Zoom** automático al hacer click
+
+### ✅ Responsive
+
+Las imágenes se adaptan automáticamente al tamaño de la pantalla.
+
+### ✅ Captions Automáticos
+
+Si incluyes un título en la sintaxis markdown, se mostrará automáticamente como caption.
+
+## Mejores Prácticas
+
+### 1. Tamaño de Imágenes
+
+Optimiza tus imágenes antes de subirlas:
+
+- **Ancho máximo recomendado**: 1200px
+- **Formato**: WebP (fallback a PNG/JPG)
+- **Peso**: < 500KB por imagen
+
+### 2. Alt Text
+
+Siempre incluye un alt text descriptivo:
+
+\`\`\`markdown
+✅ ![Diagrama de arquitectura mostrando 3 capas](url)
+❌ ![Imagen](url)
+\`\`\`
+
+### 3. Organización
+
+Guarda tus imágenes en:
+
+\`\`\`
+/public/images/
+  ├── docs/           # Imágenes de documentación
+  ├── diagrams/       # Diagramas técnicos
+  ├── screenshots/    # Capturas de pantalla
+  └── logos/          # Logos y branding
+\`\`\`
+
+### 4. URLs
+
+Puedes usar:
+
+- **URLs absolutas**: \`https://example.com/image.jpg\`
+- **URLs relativas**: \`/images/docs/diagram.png\`
+- **Placeholders**: \`https://placehold.co/600x400\` (para testing)
+
+## Ejemplos Avanzados
+
+### Múltiples Imágenes en Secuencia
+
+![Paso 1](https://placehold.co/500x300/667eea/ffffff/png?text=Step+1 "Primer paso: Configuración inicial")
+
+![Paso 2](https://placehold.co/500x300/f56565/ffffff/png?text=Step+2 "Segundo paso: Instalación de dependencias")
+
+![Paso 3](https://placehold.co/500x300/48bb78/ffffff/png?text=Step+3 "Tercer paso: Ejecución del proyecto")
+
+### Comparación Antes/Después
+
+| Antes | Después |
+|-------|---------|
+| ![Antes](https://placehold.co/400x300/cccccc/333333/png?text=Before "Interfaz antigua") | ![Después](https://placehold.co/400x300/667eea/ffffff/png?text=After "Nueva interfaz mejorada") |
+
+## Soporte de Formatos
+
+| Formato | Soportado | Recomendado |
+|---------|-----------|-------------|
+| JPG     | ✅        | Para fotos  |
+| PNG     | ✅        | Para logos  |
+| WebP    | ✅        | ⭐ Mejor rendimiento |
+| GIF     | ✅        | Para animaciones |
+| SVG     | ✅        | Para iconos |
+
+## Troubleshooting
+
+### Imagen no se muestra
+
+1. Verifica que la URL sea correcta
+2. Asegúrate de que la imagen sea accesible públicamente
+3. Comprueba el formato del archivo
+
+### Imagen muy grande
+
+Usa herramientas online para optimizar:
+- [TinyPNG](https://tinypng.com)
+- [Squoosh](https://squoosh.app)
+- [ImageOptim](https://imageoptim.com)
+
+### Caption no aparece
+
+Asegúrate de usar la sintaxis correcta con comillas:
+
+\`\`\`markdown
+![Alt]("url" "Este es el caption")
+\`\`\`
+
+## Próximos Pasos
+
+- [Markdown Syntax](/docs/markdown-syntax)
+- [Editor Guide](/docs/editor-guide)
+- [Performance Optimization](/docs/performance)
+`
+  },
 ];
