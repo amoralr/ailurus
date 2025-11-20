@@ -65,261 +65,6 @@ Implementar todos los flujos del frontend con datos mock (simulados), permitiend
 - ✅ ThemeToggle component con localStorage
 - ✅ Layouts base (BaseLayout, DocsLayout)
 
-```astro
----
-// src/shared/components/layout/Header.astro
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import ThemeToggle from './ThemeToggle';
-import { Menu } from 'lucide-react';
----
-
-<header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-  <div class="container flex h-16 items-center justify-between">
-    <!-- Logo pixel art red panda + nombre -->
-    <div class="flex items-center gap-3">
-      <a href="/" class="flex items-center gap-2 transition-opacity hover:opacity-80">
-        <img
-          src="/logo-64x64.png"
-          alt="Ailurus Logo"
-          class="h-8 w-8"
-          style="image-rendering: pixelated; image-rendering: crisp-edges;"
-        />
-        <span class="font-bold text-xl bg-gradient-to-r from-ailurus-red to-ailurus-orange bg-clip-text text-transparent">
-          Ailurus
-        </span>
-      </a>
-    </div>
-
-    <!-- Navegación principal (desktop) -->
-    <nav class="hidden md:flex items-center gap-6">
-      <a
-        href="/"
-        class="text-sm font-medium transition-colors hover:text-ailurus-orange"
-      >
-        Inicio
-      </a>
-      <a
-        href="/docs"
-        class="text-sm font-medium transition-colors hover:text-ailurus-orange"
-      >
-        Documentación
-      </a>
-    </nav>
-
-    <!-- Barra de búsqueda (desktop) -->
-    <div class="hidden md:flex flex-1 max-w-md mx-6">
-      <Input
-        type="search"
-        placeholder="Buscar documentación..."
-        class="w-full"
-      />
-    </div>
-
-    <!-- Acciones -->
-    <div class="flex items-center gap-2">
-      <ThemeToggle client:load />
-
-      <!-- Mobile menu -->
-      <Sheet client:load>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" class="md:hidden">
-            <Menu className="h-5 w-5" />
-            <span class="sr-only">Menú</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right">
-          <nav class="flex flex-col gap-4 mt-8">
-            <a href="/" class="text-lg font-medium hover:text-ailurus-orange transition-colors">
-              Inicio
-            </a>
-            <a href="/docs" class="text-lg font-medium hover:text-ailurus-orange transition-colors">
-              Documentación
-            </a>
-            <a href="/search" class="text-lg font-medium hover:text-ailurus-orange transition-colors">
-              Buscar
-            </a>
-          </nav>
-        </SheetContent>
-      </Sheet>
-    </div>
-  </div>
-</header>
-
-<script>
-  // Mobile menu toggle
-  const menuBtn = document.querySelector('.mobile-menu-btn');
-  const mobileMenu = document.querySelector('[data-mobile-menu]');
-
-  menuBtn?.addEventListener('click', () => {
-    mobileMenu?.classList.toggle('open');
-    menuBtn?.classList.toggle('active');
-  });
-</script>
-
-<style>
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--color-bg-primary);
-    border-bottom: 1px solid var(--color-border);
-    backdrop-filter: blur(10px);
-  }
-
-  .header-container {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 0 1rem;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-  }
-
-  .header-brand {
-    display: flex;
-    align-items: center;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    color: var(--color-text-primary);
-    font-weight: 600;
-    font-size: 1.25rem;
-  }
-
-  .logo-icon {
-    font-size: 1.5rem;
-  }
-
-  .header-nav {
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  .nav-link {
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-  }
-
-  .nav-link:hover {
-    color: var(--color-accent);
-  }
-
-  .header-search {
-    flex: 1;
-    max-width: 400px;
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .mobile-menu-btn {
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem;
-  }
-
-  .mobile-menu {
-    display: none;
-    background: var(--color-bg-primary);
-    border-top: 1px solid var(--color-border);
-    padding: 1rem;
-  }
-
-  .mobile-menu.open {
-    display: block;
-  }
-
-  .mobile-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .mobile-link {
-    padding: 0.75rem 1rem;
-    color: var(--color-text-primary);
-    text-decoration: none;
-    border-radius: 0.5rem;
-  }
-
-  .mobile-link:hover {
-    background: var(--color-bg-secondary);
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .header-nav {
-      display: none;
-    }
-
-    .header-search {
-      display: none;
-    }
-
-    .mobile-menu-btn {
-      display: block;
-    }
-  }
-</style>
-```
-
-### **ThemeToggle Component**
-
-```typescript
-// src/shared/components/layout/ThemeToggle.tsx
-import { useStore } from "@nanostores/react";
-import { themeStore, toggleTheme } from "@/shared/stores/theme.store";
-
-export default function ThemeToggle() {
-  const theme = useStore(themeStore);
-
-  return (
-    <button
-      onClick={toggleTheme}
-      className="theme-toggle"
-      aria-label="Cambiar tema"
-      title={theme === "light" ? "Modo oscuro" : "Modo claro"}
-    >
-      {theme === "light" ? "🌙" : "☀️"}
-    </button>
-  );
-}
-```
-
-```css
-/* En global.css o Header styles */
-.theme-toggle {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.5rem;
-  transition: background 0.2s;
-}
-
-.theme-toggle:hover {
-  background: var(--color-bg-secondary);
-}
-```
-
 **Entregable**: ✅ Sistema de diseño funcional con componentes UI reutilizables y navbar completo
 
 ---
@@ -398,21 +143,32 @@ export default function ThemeToggle() {
 
 ---
 
-## ✏️ **FASE 5: Editor Básico** (3-4 días)
+## ✏️ **FASE 5: Editor Básico** ✅ (COMPLETADO)
 
 ### **Tareas**
 
-- [ ] **5.1** Instalar SimpleMDE o alternativa ligera
-- [ ] **5.2** Crear página docs/[slug]/edit.astro
-- [ ] **5.3** Implementar EditorLayout.astro
-- [ ] **5.4** Crear SimpleMDEditor.tsx
-- [ ] **5.5** Implementar auto-save mock (localStorage)
-- [ ] **5.6** Implementar preview side-by-side
-- [ ] **5.7** Crear editor.store.ts para estado
-- [ ] **5.8** Implementar botones Guardar/Publicar/Cancelar
-- [ ] **5.9** Agregar confirmación al salir con cambios sin guardar
+- [x] **5.1** Crear editor.store.ts para estado
+- [x] **5.2** Crear editor.service.ts para gestión de drafts en localStorage
+- [x] **5.3** Implementar EditorLayout.astro (sin footer para maximizar espacio)
+- [x] **5.4** Crear MarkdownEditor.tsx con textarea y preview
+- [x] **5.5** Implementar auto-save mock (localStorage cada 5 segundos)
+- [x] **5.6** Implementar preview side-by-side con toggle
+- [x] **5.7** Crear página docs/[slug]/edit.astro
+- [x] **5.8** Implementar botones Guardar/Publicar/Cancelar/Exportar
+- [x] **5.9** Agregar confirmación al salir con cambios sin guardar
+- [x] **5.10** Agregar toolbar de Markdown (negrita, cursiva, headings, etc.)
+- [x] **5.11** Implementar toggle de auto-save
 
-**Entregable**: Editor funcional con auto-save en localStorage y preview
+### **Componentes Implementados**
+
+- ✅ editor.store.ts - EditorState con isEditing, isSaving, hasUnsavedChanges, lastSaved, autoSaveEnabled, error
+- ✅ editor.service.ts - Gestión de drafts: saveDraft(), getDraft(), publishDocument(), deleteDraft(), exportDraft(), cleanOldDrafts()
+- ✅ EditorLayout.astro - Layout minimalista sin footer
+- ✅ MarkdownEditor.tsx - Editor completo con textarea, preview, toolbar, auto-save
+- ✅ MarkdownEditor.css - Estilos responsive para editor
+- ✅ /docs/[slug]/edit.astro - Página de edición con routing dinámico
+
+**Entregable**: ✅ Editor funcional con auto-save en localStorage, preview side-by-side, toolbar Markdown y confirmación de salida
 
 ---
 
@@ -445,7 +201,7 @@ export default function ThemeToggle() {
 ✅ Lista de documentos con categorías  
 ✅ Vista de documento con TOC y navegación  
 ✅ Búsqueda funcional client-side  
-❌ Editor básico con auto-save y preview  
+✅ Editor básico con auto-save y preview  
 ✅ Dark mode con persistencia  
 ✅ Diseño responsive  
 ✅ Componentes UI reutilizables
@@ -554,11 +310,11 @@ frontend/
 | Fase 2: Homepage          | 1 día    | 6     | ✅     |
 | Fase 3: Documentación     | 3-4 días | 7-10  | ✅     |
 | Fase 4: Búsqueda          | 2 días   | 11-12 | ✅     |
-| Fase 5: Editor            | 3-4 días | 13-16 | ⏸️     |
+| Fase 5: Editor            | 3-4 días | 13-16 | ✅     |
 | Fase 6: Polish            | 2-3 días | 17-19 | ⏸️     |
 
 **Total**: 14-19 días laborables (2-3 semanas)  
-**Completado**: 9-12 días (Fases 0, 1, 2, 3, 4) ✅
+**Completado**: 13-16 días (Fases 0, 1, 2, 3, 4, 5) ✅
 
 ---
 
@@ -618,7 +374,7 @@ Una vez completado el frontend con mocks:
 ---
 
 **Última actualización**: 19 de noviembre, 2025  
-**Versión**: 1.3.0 - Fases 0, 1, 2, 3, 4 completadas
+**Versión**: 1.4.0 - Fases 0, 1, 2, 3, 4, 5 completadas
 
 ---
 
