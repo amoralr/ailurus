@@ -1,7 +1,7 @@
 # 📊 Prisma Database Schema - Ailurus
 
 **Version**: 1.0.0  
-**Database**: PostgreSQL  
+**Database**: SQLite 3  
 **ORM**: Prisma 7.0.0  
 **Normalization**: Third Normal Form (3NF)
 

@@ -1,597 +1,705 @@
-# 🏗️ ARCHITECTURE.md - Ailurus
+# 🏗️ Arquitectura de Ailurus
 
-**Proyecto**: Ailurus  
-**Fecha**: 17 de noviembre, 2025  
-**Versión**: POC v0.1
-
----
-
-## 📋 **VISIÓN GENERAL**
-
-Sistema de documentación colaborativo con edición en tiempo real, inspirado en Obsidian, compuesto por dos aplicaciones independientes:
-
-- **Frontend**: Astro SSR para renderizado dinámico de documentación
-- **Backend**: NestJS API REST + WebSocket para gestión de contenido
-
-**Características Principales:**
-
-- ✍️ Edición inline estilo Obsidian con Markdown
-- 👥 Colaboración con presencia en tiempo real (WebSocket)
-- 🔍 Búsqueda full-text (SQLite FTS5)
-- 📊 Analytics personalizado
-- 🎨 Dark mode y UI inspirada en Vercel/NestJS Docs
-- 📱 Responsive y optimizada para SEO
+**Fecha**: 20 de noviembre, 2025  
+**Versión**: v0.5
 
 ---
 
-## 🎯 **ALCANCE DEL PROYECTO**
+## 📋 Visión General
 
-### **POC (v0.1) - 5-6 semanas**
+Ailurus es una plataforma de documentación moderna con **navegación jerárquica estilo Obsidian**, construida con arquitectura desacoplada frontend/backend.
 
-#### Core Features:
-
-- ✅ Editor inline básico (SimpleMDE/EasyMDE)
-- ✅ Sistema de drafts con auto-save
-- ✅ WebSocket para presencia de usuarios
-- ✅ Búsqueda FTS5 básica
-- ✅ Storage local de imágenes con optimización
-- ✅ Navegación híbrida (scroll + tabs opcionales)
-- ✅ Analytics simple (logs en DB)
-- ✅ Dark mode
-- ✅ Sidebar colapsable + TOC sticky
-
-#### No incluido en POC:
-
-- ❌ Sistema de Review
-- ❌ Roles y permisos (RBAC)
-- ❌ Versionado de documentos
-- ❌ Real-time text collaboration
-- ❌ Búsqueda semántica con embeddings
-- ❌ Dashboard de analytics
-
-### **v0.5 - +2-3 semanas**
-
-- Editor inline mejorado
-- Sistema de Review con roles básicos
-- Versionado de documentos
-- Búsqueda con sugerencias
-- Dashboard de analytics
-
-### **v1.0 - +3-4 semanas**
-
-- Editor avanzado (TipTap/ProseMirror)
-- Real-time text collaboration
-- RBAC completo
-- Performance optimizations
-- Cache strategy avanzada
-
-### **v2.0 - Futuro**
-
-- Multi-idioma (i18n)
-- Búsqueda semántica
-- Integración con proveedores OAuth
-- CDN para assets
-- Multi-proyecto
-
----
-
-## 🏛️ **ARQUITECTURA DE ALTO NIVEL**
+### Stack Principal
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         CLIENTE                              │
-│  Browser (Chrome, Firefox, Safari, Edge)                    │
-└────────────┬────────────────────────────────────────────────┘
-             │ HTTP/HTTPS + WebSocket
-             │
-┌────────────▼────────────────────────────────────────────────┐
-│                    FRONTEND LAYER                            │
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │           Astro SSR Server (Port 4321)               │  │
-│  │                                                       │  │
-│  │  • Pages: /docs/[...slug]                           │  │
-│  │  • Components: SimpleMDE, Sidebar, TOC, Search      │  │
-│  │  • Markdown rendering con marked.js                 │  │
-│  │  • Mermaid.js para diagramas                        │  │
-│  │  • Prism/Shiki para syntax highlighting            │  │
-│  │                                                       │  │
-│  └──────────────────────────────────────────────────────┘  │
-└────────────┬────────────────────────────────────────────────┘
-             │ REST API (HTTP) + WebSocket
-             │
-┌────────────▼────────────────────────────────────────────────┐
-│                     BACKEND LAYER                            │
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │           NestJS API Server (Port 3000)              │  │
-│  │                                                       │  │
-│  │  • REST Controllers: /documents, /search            │  │
-│  │  • WebSocket Gateway: /ws (presencia)               │  │
-│  │  • Services: Document, Search, Upload, Analytics    │  │
-│  │  • Guards: Rate limiting                            │  │
-│  │                                                       │  │
-│  └──────────────────────────────────────────────────────┘  │
-└────────────┬────────────────────────────────────────────────┘
-             │
-┌────────────▼────────────────────────────────────────────────┐
-│                    STORAGE LAYER                             │
-│                                                              │
-│  ┌─────────────────────┐      ┌─────────────────────────┐  │
-│  │   SQLite Database   │      │   File System           │  │
-│  │   (documents.db)    │      │   (/uploads/images/)    │  │
-│  │                     │      │                         │  │
-│  │  • documents        │      │  • Imágenes optimizadas │  │
-│  │  • documents_fts    │      │  • WebP + JPEG fallback │  │
-│  │  • users (futuro)   │      │                         │  │
-│  │  • analytics_events │      │                         │  │
-│  │  • search_logs      │      │                         │  │
-│  └─────────────────────┘      └─────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+Frontend → Backend → Database
+  Astro     NestJS    SQLite 3
+  React     Prisma    (7 tablas, 3NF)
+ shadcn/ui
+```
+
+### Diagrama de Arquitectura
+
+```
+┌──────────────────────────────────────────────────┐
+│              CLIENTE (Browser)                    │
+│  Chrome, Firefox, Safari, Edge                   │
+└─────────────────┬────────────────────────────────┘
+                  │ HTTP/HTTPS
+                  │
+┌─────────────────▼────────────────────────────────┐
+│              FRONTEND LAYER                       │
+│                                                   │
+│  ┌─────────────────────────────────────────┐    │
+│  │    Astro SSR Server (Port 4321)         │    │
+│  │                                          │    │
+│  │  • Pages: /docs/[...slug]               │    │
+│  │  • Layouts: DocsLayout, EditorLayout    │    │
+│  │  • Components:                          │    │
+│  │    - SidebarItem (recursivo)            │    │
+│  │    - MarkdownEditor                     │    │
+│  │    - ImageLightbox (shadcn Dialog)      │    │
+│  │    - 13+ shadcn/ui components           │    │
+│  │  • Stores: nanostores (folder tree)     │    │
+│  │  • Markdown: marked.js + Shiki          │    │
+│  └─────────────────────────────────────────┘    │
+└─────────────────┬────────────────────────────────┘
+                  │ REST API (HTTP)
+                  │
+┌─────────────────▼────────────────────────────────┐
+│              BACKEND LAYER                        │
+│                                                   │
+│  ┌─────────────────────────────────────────┐    │
+│  │    NestJS API Server (Port 3000)        │    │
+│  │                                          │    │
+│  │  • Controllers:                         │    │
+│  │    - DocumentsController                │    │
+│  │    - FoldersController                  │    │
+│  │    - CategoriesController               │    │
+│  │    - SearchController                   │    │
+│  │  • Services: Feature-based              │    │
+│  │  • Repository: Prisma ORM               │    │
+│  │  • Guards: Rate limiting                │    │
+│  └─────────────────────────────────────────┘    │
+└─────────────────┬────────────────────────────────┘
+                  │
+┌─────────────────▼────────────────────────────────┐
+│            DATABASE LAYER                         │
+│                                                   │
+│  ┌─────────────────────────────────────────┐    │
+│  │  SQLite 3 (documents.db)                │    │
+│  │  file:./database/documents.db           │    │
+│  │                                          │    │
+│  │  7 tablas en Tercera Forma Normal:      │    │
+│  │  • Document (11 campos)                 │    │
+│  │  • Category (4 categorías fijas)        │    │
+│  │  • Folder (self-referential)            │    │
+│  │  • FolderDocument (M:M junction)        │    │
+│  │  • FolderCategory (M:M junction)        │    │
+│  │  • ActivityLog (auditoría)              │    │
+│  │  • CategoryStats (pre-calculado)        │    │
+│  └─────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🔄 **FLUJO DE DATOS PRINCIPAL**
+## 🎨 Frontend - Astro + React
 
-### **Lectura de Documentación (SSR)**
+### Arquitectura
 
-```
-Usuario → Astro SSR → NestJS API → SQLite → NestJS → Astro → HTML → Usuario
-         /docs/slug    GET /docs/:slug   SELECT   JSON    Render
-```
+**Framework**: Astro 4.x (SSR)  
+**UI Library**: React 18 (islands)  
+**Styling**: Tailwind + shadcn/ui  
+**State**: Nanostores  
+**TypeScript**: 5.x
 
-### **Edición de Documento**
+### Principios de Diseño
 
-```
-Usuario → Astro (Editor) → NestJS API → SQLite
-         SimpleMDE         PUT /docs/:id/draft
-                          ↓
-                    WebSocket broadcast
-                          ↓
-                    Otros usuarios ven presencia
-```
+1. **Server-Side Rendering (SSR)**: Astro renderiza HTML en servidor para SEO y performance
+2. **Islands Architecture**: Componentes React solo donde se necesita interactividad
+3. **Progressive Enhancement**: Funciona sin JavaScript, se mejora con JS
+4. **Component Isolation**: Cada feature tiene sus propios componentes y servicios
 
-### **Búsqueda**
+### Estructura de Directorios
 
 ```
-Usuario → Astro (Search) → NestJS API → SQLite FTS5 → Resultados
-         Query input       GET /search?q=...
-                                                 ↓
-                                          Log en search_logs
+frontend/src/
+├── components/
+│   └── ui/               # shadcn/ui components (13+)
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── dialog.tsx
+│       └── ...
+├── documents/
+│   ├── components/
+│   │   ├── DocumentList.astro
+│   │   └── NewDocumentForm.tsx
+│   ├── services/
+│   └── types/
+├── editor/
+│   ├── components/
+│   │   └── MarkdownEditor.tsx
+│   ├── stores/
+│   │   └── editor.store.ts
+│   └── services/
+├── markdown/
+│   ├── components/
+│   │   ├── MarkdownRenderer.astro
+│   │   ├── ImageLightbox.tsx
+│   │   ├── ImageWithLightbox.tsx
+│   │   └── ImageLightboxController.tsx
+│   ├── services/
+│   │   └── markdown.service.ts
+│   └── styles/
+│       └── markdown.css
+├── layouts/
+│   ├── Layout.astro
+│   ├── DocsLayout.astro
+│   └── EditorLayout.astro
+├── pages/
+│   ├── index.astro
+│   ├── docs/
+│   │   ├── index.astro
+│   │   ├── [...slug].astro
+│   │   ├── new.astro
+│   │   └── [slug]/edit/
+│   └── architecture/
+│       ├── index.astro
+│       ├── backend.astro
+│       ├── frontend.astro
+│       └── database.astro
+└── shared/
+    ├── components/
+    ├── stores/
+    ├── types/
+    └── utils/
 ```
 
----
+### Componentes Clave
 
-## 🗂️ **ESTRUCTURA DE DIRECTORIOS**
+#### SidebarItem (Recursivo)
 
-### **Estructura General**
+Componente React que renderiza árbol de carpetas con expansión/colapso ilimitado.
 
-```
-ailurus/
-├── apps/
-│   ├── web/                # Frontend Astro SSR
-│   │   ├── src/
-│   │   ├── public/
-│   │   └── package.json
-│   │
-│   └── api/                # Backend NestJS
-│       ├── src/
-│       ├── uploads/
-│       └── package.json
-│
-└── analisis/               # Documentación de análisis
-    ├── brainstorm-framework-documentacion.md
-    ├── decisiones-pendientes.md
-    ├── validacion-final.md
-    └── flujos-sistema.md
-```
+**Interface**: Defines the structure for folder nodes with id, name, type (folder/file), optional icon, path, order, optional children array, and optional slug.
 
----
+**Funcionalidad**:
 
-## 🎨 **PRINCIPIOS DE DISEÑO**
+- Renderizado recursivo de niveles ilimitados
+- Estado de expansión persistente (nanostores)
+- Iconos emoji para categorías
+- Links a documentos con slug
 
-### **1. Separación de Responsabilidades**
+#### ImageLightbox (shadcn Dialog)
 
-- **Astro**: Solo presentación y UX
-- **NestJS**: Solo lógica de negocio y datos
-- **Sin código compartido**: Comunicación solo vía API
+Modal para imágenes con accesibilidad WCAG 2.2 AA.
 
-### **2. Progresive Enhancement**
+**Features**:
 
-- Funciona sin JavaScript (SSR)
-- JavaScript mejora experiencia (editor, WebSocket)
-- Fallbacks para features avanzadas
-
-### **3. Performance First**
-
-- SSR para SEO y carga inicial rápida
 - Lazy loading de imágenes
-- Code splitting automático
-- Cache en headers HTTP
+- Captions opcionales
+- Keyboard navigation (Escape para cerrar)
+- Focus trap
+- Bridge vanilla→React (ImageLightboxController)
 
-### **4. Simplicity over Complexity**
+#### MarkdownEditor
 
-- SQLite sobre PostgreSQL (POC)
-- Storage local sobre S3 (POC)
-- REST sobre GraphQL (más simple)
-- No microservicios (aún)
+Editor con auto-save cada 3 segundos.
 
-### **5. Developer Experience**
+**Features**:
 
-- Hot reload en desarrollo
-- TypeScript en ambos proyectos
-- Linting y formatting automático
-- Documentación inline
+- Preview en tiempo real
+- Syntax highlighting (Shiki)
+- Toolbar personalizado
+- Draft system
+
+### Stores (Nanostores)
+
+**folder-tree.store.ts**: Estado de expansión de folders
+**editor.store.ts**: Contenido del editor + estado de guardado
+**theme.store.ts**: Dark mode con persistencia localStorage
+
+### shadcn/ui Components (13+)
+
+| Componente    | Uso                                 |
+| ------------- | ----------------------------------- |
+| Badge         | Etiquetas de categorías             |
+| Button        | Acciones (crear, editar, eliminar)  |
+| Card          | Cards de documentos                 |
+| Dialog        | Modales (nuevo documento, lightbox) |
+| Dropdown Menu | Menús contextuales                  |
+| Input         | Campos de formulario                |
+| Label         | Labels accesibles                   |
+| Select        | Selectores (categoría, estado)      |
+| Separator     | Separadores visuales                |
+| Skeleton      | Loading states                      |
+| Tabs          | Pestañas de navegación              |
+| Textarea      | Editor de texto                     |
+| Tooltip       | Tooltips informativos               |
+
+### Routing (Astro)
+
+```
+/                           → index.astro (landing)
+/docs                       → docs/index.astro (lista)
+/docs/instalacion           → docs/[...slug].astro (lectura)
+/docs/new                   → docs/new.astro (crear)
+/docs/instalacion/edit      → docs/[slug]/edit/index.astro
+/architecture               → architecture/index.astro
+/architecture/backend       → architecture/backend.astro
+/search                     → search/index.astro
+```
 
 ---
 
-## 🔐 **SEGURIDAD**
+## ⚙️ Backend - NestJS + Prisma
 
-### **POC (Básico)**
+### Arquitectura
 
-```typescript
-// Rate limiting
-@UseGuards(ThrottlerGuard)
-@Throttle(100, 60) // 100 req/min
+**Framework**: NestJS 10.x  
+**ORM**: Prisma 7.0.0  
+**Database**: SQLite 3  
+**Architecture**: Feature-Based + Clean Architecture
 
-// CORS básico
-app.enableCors({
-  origin: [process.env.FRONTEND_URL || 'http://localhost:4321'],
-  credentials: true
-});
+### Principios de Diseño
 
-// Validación de inputs
-@IsString()
-@MaxLength(10000)
-content: string;
+1. **Feature-Based Organization**: Cada feature es autocontenida
+2. **Clean Architecture**: Separación en capas (API, Application, Domain, Infrastructure)
+3. **Dependency Injection**: NestJS DI container
+4. **Repository Pattern**: Abstracción del acceso a datos con Prisma
+
+### Estructura de Directorios
+
+```
+backend/src/
+├── documents/
+│   ├── api/
+│   │   └── documents.controller.ts
+│   ├── application/
+│   │   └── documents.service.ts
+│   ├── domain/
+│   │   ├── document.entity.ts
+│   │   └── document-status.enum.ts
+│   ├── infrastructure/
+│   │   └── document.repository.ts
+│   ├── dto/
+│   │   ├── create-document.dto.ts
+│   │   └── document.response.ts
+│   └── documents.module.ts
+├── folders/
+│   ├── api/
+│   │   └── folders.controller.ts
+│   ├── application/
+│   │   └── folders.service.ts
+│   ├── infrastructure/
+│   │   └── folder.repository.ts
+│   └── folders.module.ts
+├── categories/
+│   ├── api/
+│   │   └── categories.controller.ts
+│   ├── application/
+│   │   └── categories.service.ts
+│   └── categories.module.ts
+├── search/
+│   ├── api/
+│   │   └── search.controller.ts
+│   ├── application/
+│   │   └── search.service.ts
+│   └── search.module.ts
+├── shared/
+│   ├── database/
+│   │   ├── prisma.module.ts
+│   │   └── prisma.service.ts
+│   └── utils/
+│       └── slug.util.ts
+├── infrastructure/
+│   ├── config/
+│   ├── guards/
+│   ├── interceptors/
+│   └── filters/
+├── app.module.ts
+└── main.ts
 ```
 
-### **v0.5 (Con autenticación)**
+### Capas de Arquitectura
 
-```typescript
-// JWT authentication
-@UseGuards(JwtAuthGuard)
-@Post('publish')
+#### 1. API Layer (Controllers)
 
-// RBAC básico
-@UseGuards(RolesGuard)
-@Roles('editor', 'admin')
-```
+Endpoints REST con validación y rate limiting.
 
-### **v1.0 (Producción)**
+**Ejemplo**: DocumentsController with throttler guard implementing GET endpoints for listing all documents and finding by slug, plus POST endpoint for document creation.
 
-- Helmet.js para headers de seguridad
-- CSRF protection
-- Content Security Policy
-- Input sanitization completo
-- Audit logs
+#### 2. Application Layer (Services)
+
+Lógica de negocio y casos de uso.
+
+**Ejemplo**: DocumentsService with dependency injection of DocumentRepository, implementing business logic for finding all documents, finding by slug, and creating documents.
+
+#### 3. Infrastructure Layer (Repositories)
+
+Acceso a datos con Prisma ORM.
+
+**Ejemplo**: DocumentRepository extending BaseRepository with methods for finding documents by slug, fetching all published documents, and creating new documents using Prisma types.
+
+### Módulos (NestJS)
+
+AppModule imports: ConfigModule (global), ThrottlerModule with short (10 req/sec) and long (100 req/min) limits, PrismaModule, DocumentsModule, FoldersModule, CategoriesModule, and SearchModule.
+
+### Configuración Global
+
+**main.ts**:
+
+- CORS: origin frontend
+- Validation: class-validator automático
+- Exception filter: formato de error consistente
+- Logging interceptor: todas las requests
 
 ---
 
-## 📊 **MODELO DE DATOS**
+## 🗄️ Base de Datos - SQLite + Prisma
 
-### **Esquema Simplificado (POC)**
+### Schema (7 tablas, 3NF)
 
-**ORM:** Prisma ^5.7.0
+#### Document (tabla principal - 11 campos)
 
-```prisma
-model Document {
-  id        Int            @id @default(autoincrement())
-  slug      String         @unique
-  title     String
-  content   String
-  status    DocumentStatus @default(DRAFT)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  createdBy String         @default("anonymous")
-}
+Contains: id (autoincrement primary key), slug (unique), title, content (text), optional excerpt (text), category relation via categoryId, optional subcategory, optional path, status (defaults to DRAFT), createdAt (auto), updatedAt (auto), createdBy (defaults to "anonymous"), and relations to FolderDocument and ActivityLog.
 
-enum DocumentStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
+#### Category (4 categorías fijas)
 
-model AnalyticsEvent {
-  id        Int      @id @default(autoincrement())
-  eventType String
-  metadata  String?
-  timestamp DateTime @default(now())
-}
+Contains: id (string primary key), name, icon (emoji), order (int), and relations to Document, FolderCategory, and optional CategoryStats.
 
-model SearchLog {
-  id           Int      @id @default(autoincrement())
-  query        String
-  resultsCount Int      @default(0)
-  searchedAt   DateTime @default(now())
-}
+**Categorías**:
+
+- 🚀 `getting-started` - Getting Started
+- 🏗️ `architecture` - Architecture
+- 📚 `api-reference` - API Reference
+- 📖 `guides` - Guides
+
+#### Folder (jerarquía self-referential)
+
+Contains: id (autoincrement primary key), name, type (enum: FOLDER/FILE), optional icon, unique path, order, optional parentId, self-referential parent and children relations with cascade delete, relations to FolderDocument and FolderCategory, and createdAt timestamp.
+
+**Características**:
+
+- Self-referential con `parentId`
+- Niveles ilimitados de anidación
+- Path completo para navegación breadcrumb
+- ON DELETE CASCADE para mantener integridad
+
+#### FolderDocument (M:M junction)
+
+Relaciona carpetas con documentos.
+
+Contains: id (autoincrement primary key), folderId, documentId, order, relations to Folder and Document with cascade delete, and unique constraint on folderId-documentId pair.
+
+#### FolderCategory (M:M junction)
+
+Relaciona carpetas con categorías.
+
+Contains: id (autoincrement primary key), folderId, categoryId (string), relations to Folder (cascade delete) and Category (restrict delete), and unique constraint on folderId-categoryId pair.
+
+#### ActivityLog (auditoría)
+
+Contains: id (autoincrement primary key), documentId, action (string: "created", "updated", "published"), userId (string), timestamp (auto default now), and relation to Document with cascade delete.
+
+#### CategoryStats (pre-calculado)
+
+Contains: categoryId (string primary key), documentCount (int, defaults to 0), updatedAt (auto), and relation to Category with cascade delete.
+
+### Relaciones
+
+```
+Document ─┬─ N:1 ─→ Category (categoryId)
+          └─ 1:N ─→ FolderDocument ─→ Folder
+
+Folder ─┬─ 1:N ─→ Folder (self-referential)
+        ├─ 1:N ─→ FolderDocument ─→ Document
+        └─ 1:N ─→ FolderCategory ─→ Category
+
+Category ─┬─ 1:N ─→ Document
+          ├─ 1:N ─→ FolderCategory
+          └─ 1:1 ─→ CategoryStats
 ```
 
-**Búsqueda Full-Text:** SQLite FTS5 (triggers sincronizados con Prisma)
+### Índices de Performance
 
-Ver esquema completo en [Prisma Schema](./docs/PRISMA_SCHEMA.md)
+Five strategic indices:
+
+- idx_document_category: on Document(categoryId)
+- idx_document_status: on Document(status)
+- idx_folder_parent: on Folder(parentId)
+- idx_folder_path: on Folder(path)
+- idx_activity_log_document: on ActivityLog(documentId)
+
+### Seed Data
+
+- **4 categorías fijas** con iconos emoji
+- **20 documentos** distribuidos en categorías
+- **11 folders** en jerarquía (Equipo → Proyecto → categorías)
+- **29 nodos** en árbol de navegación total
+
+Ver detalles completos en [docs/DATABASE.md](./docs/DATABASE.md)
 
 ---
 
-## 🚀 **DEPLOYMENT**
+## 🔄 Flujo de Datos
 
-### **POC (Desarrollo)**
+### Lectura de Documento
+
+```
+Usuario → Astro → NestJS → Prisma → SQLite
+         /docs/:slug
+                  GET /documents/:slug
+                         SELECT * FROM Document
+                         JOIN Category
+                         JOIN FolderDocument
+                  ← JSON
+         ← HTML (SSR)
+```
+
+### Creación de Documento
+
+```
+Usuario → React Form → NestJS → Prisma → SQLite
+         NewDocumentForm
+                  POST /documents { title, content, categoryId }
+                         INSERT INTO Document
+                  ← { id, slug, ... }
+         → Redirect /docs/:slug/edit
+```
+
+### Navegación Jerárquica
+
+```
+Usuario → Astro Sidebar → NestJS → Prisma → SQLite
+         Component Mount
+                  GET /folders
+                         SELECT * FROM Folder
+                         ORDER BY path, order
+                         + Recursive children
+                  ← JSON (árbol completo: 29 nodos)
+         ← Render SidebarItem recursivo con expansión
+```
+
+### Búsqueda Full-text
+
+```
+Usuario → Search Input → NestJS → SQLite FTS5
+         Typing query
+                  GET /search?q=instalacion
+                         SELECT * FROM Document
+                         WHERE to_tsvector('spanish', content) @@ plainto_tsquery('spanish', 'instalacion')
+                  ← JSON (resultados ordenados por rank)
+         ← Render lista con highlights
+```
+
+---
+
+## 🔒 Seguridad
+
+### Rate Limiting
+
+ThrottlerModule configuration with three tiers:
+
+- Short: 10 requests per second (ttl: 1000ms)
+- Medium: 50 requests per 10 seconds (ttl: 10000ms)
+- Long: 100 requests per minute (ttl: 60000ms)
+
+### CORS
+
+CORS enabled with origin from FRONTEND_URL environment variable (defaults to http://localhost:4321), credentials enabled, and methods allowed: GET, POST, PUT, DELETE.
+
+### Validación de Inputs
+
+CreateDocumentDto uses class-validator decorators: title must be a non-empty string with max 200 characters, content must be a string with max 100000 characters.
+
+### Headers de Seguridad
+
+Helmet middleware applied for security headers including X-Frame-Options, Content Security Policy (CSP), and other protections.
+
+---
+
+## ⚡ Performance
+
+### Frontend
+
+- **SSR**: HTML generado en servidor reduce TTFB
+- **Islands**: JavaScript solo en componentes interactivos
+- **Lazy Loading**: Imágenes con `loading="lazy"`
+- **Code Splitting**: Astro divide código automáticamente
+- **Prefetching**: Links prefetch on hover
+
+### Backend
+
+- **Connection Pooling**: Prisma optimiza conexiones DB
+- **Índices Estratégicos**: categoryId, status, parentId, path
+- **Query Optimization**: SELECT específicos, no `SELECT *`
+- **Response Caching**: HTTP headers Cache-Control (pendiente)
+
+### Database
+
+- **Índices**: 5 índices en tablas principales
+- **Stats Pre-calculadas**: CategoryStats evita COUNT(\*)
+- **Full-text Search**: SQLite FTS5 integrado (pendiente)
+- **Joins Optimizados**: Relaciones con índices
+
+---
+
+## 🧪 Testing
+
+### Frontend (Pendiente)
+
+Component tests using Vitest + Testing Library for SidebarItem: tests should verify folder rendering with children and expansion behavior on click.
+
+### Backend (Pendiente)
+
+Unit tests using Jest for DocumentsService: should verify draft document creation with correct status and slug generation.
+
+E2E tests for Documents API: should verify GET /documents returns 200 status with array of published documents.
+
+---
+
+## 📊 Monitoreo
+
+### Logging
+
+LoggingInterceptor implementation: captures HTTP method and URL, measures request duration, and logs the information with timestamp.
+
+**Logs**:
+
+- Todas las requests HTTP con duración
+- Errores con stack trace
+- Queries Prisma en modo debug
+
+### Error Tracking
+
+HttpExceptionFilter implementation: catches all exceptions, determines HTTP status code (defaults to 500), and returns JSON response with success flag, status code, error message, timestamp, and request path.
+
+### Métricas (Pendiente)
+
+- Request duration histogram
+- Error rate counter
+- Database query duration
+- Memory usage gauge
+
+---
+
+## 🚀 Deployment
+
+### Development
 
 ```bash
 # Terminal 1: Backend
-cd apps/api
-npm run dev # Puerto 3000
+cd backend
+pnpm dev  # http://localhost:3000
 
 # Terminal 2: Frontend
-cd apps/web
-npm run dev # Puerto 4321
+cd frontend
+pnpm dev  # http://localhost:4321
+
+# Terminal 3: Database UI
+cd backend
+pnpm prisma:studio  # http://localhost:5555
 ```
 
-### **v0.5 (Staging con Docker)**
+### Production (Pendiente)
 
-```yaml
-# docker-compose.yml
-version: "3.8"
-services:
-  api:
-    build: ./apps/api
-    ports: ["3000:3000"]
-    volumes: ["./uploads:/app/uploads"]
-    container_name: ailurus-api
+#### Docker Compose
 
-  web:
-    build: ./apps/web
-    ports: ["4321:4321"]
-    environment:
-      API_URL: http://api:3000
-    container_name: ailurus-web
-```
+Configuration includes:
 
-### **v1.0 (Producción K8s)**
+- Backend service: builds from ./backend, exposes port 3000, mounts sqlite_data volume to /app/database, sets DATABASE_URL and NODE_ENV=production
+- Frontend service: builds from ./frontend, exposes port 4321, sets API_URL to backend service and NODE_ENV=production, depends on backend
+- Named volume: sqlite_data for database persistence
 
-```yaml
-# kubernetes/
-├── backend-deployment.yaml
-├── backend-service.yaml
-├── frontend-deployment.yaml
-├── frontend-service.yaml
-└── ingress.yaml
-```
+#### Kubernetes (v1.0)
+
+Kubernetes configuration files:
+
+- backend-deployment.yaml: deployment with SQLite volume mount
+- backend-service.yaml: service for backend
+- backend-pvc.yaml: PersistentVolumeClaim for database persistence
+- frontend-deployment.yaml: deployment for frontend
+- frontend-service.yaml: service for frontend
+- ingress.yaml: ingress rules
 
 ---
 
-## 🔄 **INTEGRACIÓN CONTINUA**
+## 🔧 Decisiones de Arquitectura
 
-### **Validaciones Pre-commit**
-
-```json
-{
-  "scripts": {
-    "lint": "eslint . --ext .ts,.astro",
-    "format": "prettier --write .",
-    "type-check": "tsc --noEmit",
-    "test": "vitest run"
-  }
-}
-```
-
-### **CI/CD (Futuro)**
-
-- GitHub Actions para tests automáticos
-- Deploy preview en PRs
-- Semantic versioning automático
-- Rollback automático si falla health check
-
----
-
-## 📈 **MÉTRICAS Y MONITOREO**
-
-### **POC**
-
-- Logs en consola
-- SQLite queries con timestamps
-- Analytics básico en tabla
-
-### **v0.5**
-
-- Dashboard interno de analytics
-- Términos de búsqueda más comunes
-- Páginas más visitadas
-- Usuarios activos editando
-
-### **v1.0**
-
-- APM (Application Performance Monitoring)
-- Error tracking (Sentry)
-- Uptime monitoring
-- Real User Monitoring (RUM)
-
----
-
-## 🧪 **TESTING**
-
-### **POC (Mínimo)**
-
-```typescript
-// Unit tests básicos
-describe('DocumentService', () => {
-  it('should create draft document', async () => {
-    const doc = await service.createDraft({...});
-    expect(doc.status).toBe('draft');
-  });
-});
-```
-
-### **v0.5 (Completo)**
-
-- Unit tests (80% coverage)
-- Integration tests (API endpoints)
-- Component tests (Astro components)
-
-### **v1.0 (E2E)**
-
-- Playwright E2E tests
-- Visual regression tests
-- Performance tests
-- Load testing
-
----
-
-## 🔧 **TECNOLOGÍAS CORE**
-
-| Categoría          | Tecnología | Versión  | Justificación                                |
-| ------------------ | ---------- | -------- | -------------------------------------------- |
-| Frontend Framework | Astro      | ^4.0.0   | SSR flexible, Islands Architecture           |
-| Backend Framework  | NestJS     | ^10.0.0  | TypeScript, modular, enterprise-ready        |
-| Database           | SQLite     | ^3.45.0  | Simple, sin servidor, perfecto para POC      |
-| ORM                | Prisma     | ^5.7.0   | Type-safe, migraciones, developer experience |
-| Search             | FTS5       | Built-in | Full-text search nativo en SQLite            |
-| Editor             | SimpleMDE  | ^2.18.0  | Markdown editor simple y probado             |
-| WebSocket          | Socket.io  | ^4.7.0   | Real-time bidireccional confiable            |
-| Image Processing   | Sharp      | ^0.33.0  | Rápido, soporte WebP/AVIF                    |
-| Markdown Parser    | marked     | ^11.0.0  | Parser rápido y extensible                   |
-| Syntax Highlight   | Shiki      | ^1.0.0   | Highlighting preciso con temas VS Code       |
-| Diagrams           | Mermaid.js | ^10.6.0  | Diagramas desde código                       |
-
----
-
-## 📚 **DOCUMENTACIÓN TÉCNICA**
-
-### **Para Desarrolladores**
-
-- [Frontend ARCHITECTURE](./docs/FRONTEND_ARCHITECTURE.md)
-- [Backend ARCHITECTURE](./docs/BACKEND_ARCHITECTURE.md)
-- [API Contracts](./docs/API_CONTRACTS.md)
-- [Prisma Schema](./docs/PRISMA_SCHEMA.md)
-- [Setup Guide](./docs/SETUP_GUIDE.md)
-- [Roadmap](./docs/ROADMAP.md)
-
-### **Para Usuarios**
-
-- [Guía de Escritura](./docs/writing-guide.md) (futuro)
-- [Markdown Syntax](./docs/markdown-syntax.md) (futuro)
-- [FAQ](./docs/faq.md) (futuro)
-
----
-
-## 🎯 **DECISIONES DE ARQUITECTURA**
-
-### **1. ¿Por qué Astro y no Next.js?**
+### ¿Por qué Astro y no Next.js?
 
 ✅ **Astro**:
 
-- Mejor performance (menos JS por defecto)
+- Menos JavaScript en cliente por defecto (mejor performance)
 - Islands Architecture (componentes interactivos solo donde se necesitan)
-- Agnóstico a frameworks (puedes usar React, Vue, Svelte)
+- Agnóstico a frameworks (React, Vue, Svelte)
 - SSR flexible y SSG cuando convenga
 
-❌ **Next.js**: Más complejo, más JS en cliente, más opinado
+❌ **Next.js**: Más JS en cliente, más complejo, más opinado
 
-### **2. ¿Por qué NestJS y no Express?**
+### ¿Por qué NestJS y no Express?
 
 ✅ **NestJS**:
 
 - TypeScript first
 - Arquitectura modular y testeable
-- Decoradores y DI integrados
-- WebSocket support nativo
-- Más estructura para proyectos que crecen
+- Decoradores y Dependency Injection integrados
+- Estructura escalable para equipos
 
-❌ **Express**: Menos estructura, más decisiones manuales
+❌ **Express**: Menos estructura, más decisiones manuales, no escalable
 
-### **3. ¿Por qué SQLite y no PostgreSQL?**
+### ¿Por qué SQLite y no PostgreSQL?
 
-✅ **SQLite para POC**:
+✅ **SQLite**:
 
-- Sin servidor adicional
-- Setup instantáneo
-- FTS5 integrado
-- Suficiente para 1000+ documentos
-- Migración a Postgres simple después
+- Portabilidad: un solo archivo .db (fácil de respaldar)
+- Docker-friendly: volume único persiste todo el estado
+- Zero-config: no requiere servidor separado
+- Suficiente: soporta miles de documentos sin problemas
+- FTS5 integrado: full-text search nativo y performante
+- Perfecto para aplicaciones documentales con escritura moderada
 
-❌ **PostgreSQL**: Overhead innecesario para POC
+❌ **SQLite**: No full-text search avanzado, limitado en concurrencia, no escalable
 
-### **4. ¿Por qué SimpleMDE y no TipTap?**
+### ¿Por qué Prisma y no SQL directo?
 
-✅ **SimpleMDE para POC**:
-
-- Setup en minutos
-- UI probada y estable
-- Menos configuración
-- Migración a TipTap después
-
-❌ **TipTap**: 3-4 semanas de configuración
-
-### **5. ¿Por qué WebSocket presencia y no real-time text?**
-
-✅ **Presencia para POC**:
-
-- 1 semana vs 3-4 semanas
-- Funcionalidad útil sin complejidad
-- Prepara para real-time después
-
-❌ **Real-time text**: CRDT/OT muy complejo para POC
-
-### **6. ¿Por qué Prisma y no SQL directo?**
-
-✅ **Prisma para POC**:
+✅ **Prisma**:
 
 - Type-safety completo (TypeScript)
-- Migraciones automáticas versionadas
-- Developer experience excepcional
+- Migraciones versionadas automáticas
 - Prisma Studio para debugging visual
-- Fácil migración a PostgreSQL después
-- Raw SQL disponible para FTS5
+- Developer experience excepcional
+- Raw SQL disponible cuando se necesita
 
-❌ **SQL directo**: Más propenso a errores, sin types, sin migraciones estructuradas
+❌ **SQL directo**: Propenso a errores, sin types, sin migraciones estructuradas
 
----
+### ¿Por qué shadcn/ui y no Material-UI?
 
-## 🚦 **ROADMAP**
+✅ **shadcn/ui**:
 
-### **Sprint 1 (Semana 1-2): Fundamentos**
+- Components copiables (no librería externa)
+- Customizable 100% con Tailwind
+- Accesibilidad WCAG 2.2 AA por defecto
+- Temas integrados (light/dark)
+- Bundle size mínimo
 
-- Setup proyectos Astro + NestJS
-- Esquema DB y migrations
-- API CRUD básico de documentos
-- Astro páginas de lectura
-- Markdown rendering
+❌ **Material-UI**: Librería pesada (300KB+), menos customizable, estilo opinado
 
-### **Sprint 2 (Semana 3-4): Edición**
+### ¿Por qué Feature-Based y no Layered?
 
-- SimpleMDE integrado
-- Auto-save drafts
-- WebSocket presencia
-- Publish documents
-- Búsqueda FTS5 básica
+✅ **Feature-Based**:
 
-### **Sprint 3 (Semana 5-6): Polish**
+- Cada feature es autocontenida
+- Fácil agregar/eliminar features
+- Mejor organización en equipos
+- Evita god services
 
-- UI completo (Sidebar, TOC, Dark mode)
-- Upload de imágenes con optimización
-- Analytics básico
-- Navegación con tabs
-- Testing básico
-- Documentación
+❌ **Layered**: Todo mezclado en /controllers, /services, /repositories
 
 ---
 
-## 📞 **SOPORTE Y CONTRIBUCIÓN**
+## 📚 Documentación Adicional
 
-### **Para el equipo**
+### Documentación Técnica
 
-- Issues en GitHub
-- Documentación inline en código
-- Comentarios descriptivos en decisiones no obvias
+- [🗄️ Database](./docs/DATABASE.md) - Schema SQLite completo (7 tablas, 3NF)
+- [🗂️ Folder System](./docs/FOLDER_SYSTEM.md) - Navegación jerárquica Obsidian-style
+- [🎨 Design System](./docs/DESIGN_SYSTEM.md) - shadcn/ui, iconos, colores, accesibilidad
+- [📡 API](./docs/API.md) - Endpoints REST (pendiente actualizar)
+- [🖥️ Frontend](./docs/FRONTEND.md) - Componentes Astro + React (pendiente actualizar)
+- [⚙️ Setup](./docs/SETUP.md) - Guía de instalación paso a paso (pendiente actualizar)
+- [🗺️ Roadmap](./docs/ROADMAP.md) - Prioridades y timeline
 
-### **Contacto**
+### Documentación Interna
 
-- Project Lead: [Tu nombre]
-- Repositorio: [GitHub URL]
-- Slack/Discord: [Channel]
+- [📊 Alignment Report](./docs/INTERNAL/ALIGNMENT_REPORT.md) - Estado de implementación
+- [🔄 Flujos Sistema](./docs/INTERNAL/FLUJOS_SISTEMA.md) - Diagramas de flujo
+- [📝 Resumen Decisiones](./docs/INTERNAL/RESUMEN_DECISIONES.md) - Decisiones de arquitectura
 
 ---
 
-**Última actualización**: 17 de noviembre, 2025  
-**Versión del documento**: 1.0.0
+**Última actualización**: 20 de noviembre, 2025  
+**Versión**: v0.5
