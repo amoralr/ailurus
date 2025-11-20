@@ -1,217 +1,341 @@
-# Frontend - Ailurus Documentation Framework
+# 🎨 Ailurus Frontend
 
-Sistema de documentación moderno construido con **Astro** + **React** + **Tailwind CSS**.
+> Modern documentation framework built with Astro, React, and shadcn/ui
 
-## 📁 Estructura del Proyecto
-
-```
-frontend/src/
-├── components/
-│   ├── ui/                  # Componentes UI de shadcn
-│   │   ├── badge.tsx
-│   │   ├── button.tsx
-│   │   ├── card.tsx
-│   │   └── separator.tsx
-│   └── Welcome.astro        # Componente de ejemplo
-├── layouts/
-│   └── Layout.astro         # Layout base de la aplicación
-├── lib/
-│   └── utils.ts             # Utilidades (cn helper)
-├── pages/
-│   └── index.astro          # Landing page
-├── shared/
-│   ├── components/layout/   # Componentes de layout compartidos
-│   │   ├── Header.astro     # Header con navegación
-│   │   ├── Footer.astro     # Footer con links
-│   │   └── ThemeToggle.tsx  # Toggle de tema (React)
-│   ├── stores/              # Estado global (Nanostores)
-│   │   └── theme.store.ts   # Store del tema light/dark
-│   └── utils/               # Utilidades compartidas
-│       ├── date.util.ts     # Formateo de fechas
-│       └── slug.util.ts     # Generación de slugs
-└── styles/
-    ├── global.css           # Estilos globales
-    └── themes/              # Variables de tema
-        ├── light.css        # Tema claro
-        └── dark.css         # Tema oscuro
-```
-
-## 🚀 Stack Tecnológico
-
-- **Framework**: Astro 5.x (SSG)
-- **UI Library**: React 18
-- **Styling**: Tailwind CSS 3.x
-- **Components**: shadcn/ui
-- **State Management**: Nanostores
-- **Icons**: Lucide React
-- **Type Safety**: TypeScript
-
-## 🎨 Sistema de Diseño
-
-### Colores Ailurus
-
-- **Red**: `#E63946` - Color principal
-- **Orange**: `#FF6700` - Acento
-- **Brown**: `#A0522D` - Secundario
-- **Cream**: `#FFF8DC` - Background claro
-- **Dark**: `#1A1A1A` - Background oscuro
-
-### Componentes UI
-
-Todos los componentes UI están basados en **shadcn/ui** y son completamente customizables:
-
-- `Button` - Botones con variantes y tamaños
-- `Card` - Tarjetas con header, content y footer
-- `Badge` - Etiquetas pequeñas
-- `Separator` - Líneas divisorias
-
-## 📦 Scripts Disponibles
-
-```bash
-# Desarrollo
-pnpm dev          # Inicia servidor de desarrollo en :4321
-
-# Build
-pnpm build        # Construye para producción
-pnpm preview      # Preview del build de producción
-
-# Linting
-pnpm lint         # Ejecuta linter
-```
-
-## 🎯 Características Implementadas
-
-### ✅ Fase Actual (v0.1 - POC)
-
-- [x] Layout base con Header y Footer
-- [x] Sistema de temas (Light/Dark) con Nanostores
-- [x] Componentes UI base (shadcn/ui)
-- [x] Landing page completa
-- [x] Responsive design
-- [x] Integración con Tailwind CSS
-- [x] TypeScript configurado
-
-### 🚧 Próximas Fases
-
-**Fase 2: Shared Layer**
-
-- [ ] API service (axios)
-- [ ] WebSocket service
-- [ ] Storage service (localStorage)
-- [ ] Hooks compartidos (useDebounce, etc.)
-
-**Fase 3: Documents Feature**
-
-- [ ] Componentes de documentos
-- [ ] Servicios de API
-- [ ] Tipos y DTOs
-- [ ] Páginas dinámicas
-
-**Fase 4: Editor Feature**
-
-- [ ] Editor Markdown (SimpleMDE)
-- [ ] Auto-save
-- [ ] WebSocket presence
-- [ ] Image upload
-
-**Fase 5: Search Feature**
-
-- [ ] Barra de búsqueda
-- [ ] Resultados con highlighting
-- [ ] Filtros
-- [ ] Store de búsqueda
-
-## 🔧 Configuración
-
-### Astro Config
-
-```javascript
-export default defineConfig({
-  output: "static", // SSG por ahora
-  integrations: [
-    react(), // Para componentes interactivos
-    tailwind({
-      applyBaseStyles: false, // Estilos custom
-    }),
-  ],
-  vite: {
-    ssr: {
-      noExternal: ["@nanostores/react", "nanostores"],
-    },
-  },
-  server: {
-    port: 4321,
-    host: true,
-  },
-});
-```
-
-### Variables de Entorno
-
-Crear archivo `.env` en la raíz del frontend:
-
-```env
-# API URLs (cuando se implemente backend)
-PUBLIC_API_URL=http://localhost:3000
-PUBLIC_WS_URL=ws://localhost:3000
-```
-
-## 📚 Convenciones de Código
-
-### Archivos
-
-- `.astro` - Componentes SSR/estáticos
-- `.tsx` - Componentes React interactivos
-- `.ts` - Lógica de negocio, stores, utils
-- `.css` - Estilos
-
-### Nombres
-
-- Componentes: `PascalCase.tsx` o `PascalCase.astro`
-- Stores: `nombre.store.ts`
-- Utils: `nombre.util.ts`
-- Services: `nombre.service.ts`
-
-### Importaciones
-
-```typescript
-// Alias @ configurado para src/
-import { Button } from "@/components/ui/button";
-import { themeStore } from "@/shared/stores/theme.store";
-```
-
-## 🎨 Uso del Sistema de Temas
-
-```typescript
-// En componentes React
-import { useStore } from "@nanostores/react";
-import { themeStore, toggleTheme, setTheme } from "@/shared/stores/theme.store";
-
-function MyComponent() {
-  const theme = useStore(themeStore);
-
-  return <button onClick={toggleTheme}>Current theme: {theme}</button>;
-}
-```
-
-## 📖 Documentación Adicional
-
-- [Astro Docs](https://docs.astro.build)
-- [shadcn/ui](https://ui.shadcn.com)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Nanostores](https://github.com/nanostores/nanostores)
-
-## 🤝 Contribución
-
-Este es un POC en desarrollo. Para contribuir:
-
-1. Revisa la arquitectura en `docs/FRONTEND_ARCHITECTURE.md`
-2. Sigue las convenciones de código
-3. Usa los componentes UI existentes
-4. Mantén la estructura de carpetas
+Frontend application for Ailurus documentation system featuring server-side rendering, markdown editing, and real-time search with a focus on accessibility and performance.
 
 ---
 
-**Estado**: 🟡 POC - UI Base Implementada  
-**Versión**: 0.1.0  
-**Última actualización**: Noviembre 2025
+## 📋 Table of Contents
+
+- [Tech Stack](#-tech-stack)
+- [Features](#-features)
+- [Getting Started](#-getting-started)
+- [Project Structure](#-project-structure)
+- [Development Guide](#-development-guide)
+- [Available Scripts](#-available-scripts)
+- [Design System](#-design-system)
+- [Mock Data](#-mock-data)
+- [Contributing](#-contributing)
+- [Documentation](#-documentation)
+
+---
+
+## 🚀 Tech Stack
+
+| Technology       | Version | Purpose                                 |
+| ---------------- | ------- | --------------------------------------- |
+| **Astro**        | 5.15.9  | SSR framework with Islands Architecture |
+| **React**        | 19.2.0  | Interactive UI components               |
+| **TypeScript**   | Latest  | Type-safe development                   |
+| **Tailwind CSS** | 3.4.18  | Utility-first styling                   |
+| **shadcn/ui**    | Latest  | Accessible component library            |
+| **Nanostores**   | 1.0.1   | Lightweight state management            |
+| **Shiki**        | 3.15.0  | Syntax highlighting                     |
+| **Marked**       | 17.0.0  | Markdown parsing                        |
+| **Lucide React** | 0.554.0 | Icon library                            |
+
+---
+
+## ✨ Features
+
+### Core Functionality
+
+- ✅ **Markdown Editor**: Real-time WYSIWYG editing with toolbar
+- ✅ **Search System**: Client-side full-text search with debouncing
+- ✅ **Document Management**: List, view, create, and edit documents
+- ✅ **Syntax Highlighting**: Code blocks with Shiki (multiple languages)
+- ✅ **Auto-save**: Draft persistence with localStorage
+
+### UI/UX
+
+- ✅ **Responsive Design**: Mobile-first approach
+- ✅ **Dark Mode**: Theme toggle with system preference detection
+- ✅ **Accessibility**: WCAG 2.2 AA compliant
+- ✅ **Loading States**: Skeleton components for better UX
+- ✅ **Animations**: Smooth transitions respecting `prefers-reduced-motion`
+
+### SEO & Performance
+
+- ✅ **SEO Optimized**: Open Graph, Twitter Cards, structured data (JSON-LD)
+- ✅ **Static Generation**: 49+ pages pre-rendered at build time
+- ✅ **Code Splitting**: Automatic chunking for optimal performance
+
+---
+
+## 🏃 Getting Started
+
+### Prerequisites
+
+- **Node.js**: >= 18.x
+- **pnpm**: >= 8.x (recommended package manager)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <repo-url>
+cd documetation/frontend
+
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm run dev
+```
+
+The application will be available at `http://localhost:4321`
+
+---
+
+## 📁 Project Structure
+
+```
+frontend/
+├── src/
+│   ├── components/        # shadcn/ui components
+│   │   └── ui/            # Button, Card, Dialog, Skeleton, etc.
+│   ├── documents/         # Document management feature
+│   │   ├── components/    # DocumentList
+│   │   └── types/         # TypeScript types
+│   ├── editor/            # Markdown editor feature
+│   │   ├── components/    # MarkdownEditor.tsx
+│   │   ├── services/      # editor.service.ts
+│   │   └── stores/        # editor.store.ts (auto-save)
+│   ├── markdown/          # Markdown rendering
+│   │   ├── components/    # MarkdownRenderer.astro
+│   │   └── services/      # markdown.service.ts (Shiki)
+│   ├── search/            # Search system
+│   │   ├── components/    # SearchBar, SearchResults
+│   │   ├── services/      # search.service.ts
+│   │   └── stores/        # search.store.ts
+│   ├── shared/            # Shared utilities
+│   │   ├── components/    # Header, Footer, Sidebar, TOC, ThemeToggle
+│   │   ├── stores/        # theme.store.ts
+│   │   └── utils/         # date.util.ts, slug.util.ts
+│   ├── layouts/           # Page layouts
+│   │   ├── Layout.astro        # Base layout with SEO
+│   │   ├── DocsLayout.astro    # Documentation layout
+│   │   └── EditorLayout.astro  # Editor layout
+│   ├── pages/             # Astro pages (routes)
+│   │   ├── index.astro         # Homepage
+│   │   ├── 404.astro           # Error page
+│   │   ├── docs/               # Documentation pages
+│   │   │   ├── index.astro     # Docs listing
+│   │   │   ├── [...slug].astro # Dynamic doc pages
+│   │   │   └── new.astro       # Create new doc
+│   │   └── search/
+│   │       └── index.astro     # Search page
+│   ├── styles/            # Global styles
+│   │   ├── global.css          # Tailwind + shadcn/ui variables
+│   │   └── themes/             # light.css, dark.css
+│   └── mocks/             # Mock data (POC only)
+│       └── documents.mock.ts
+├── public/                # Static assets
+├── astro.config.mjs       # Astro configuration
+├── tailwind.config.mjs    # Tailwind configuration
+├── components.json        # shadcn/ui configuration
+└── package.json
+```
+
+---
+
+## 💻 Development Guide
+
+### Adding a New Component
+
+1. **shadcn/ui components**:
+
+```bash
+npx shadcn@latest add [component-name]
+```
+
+2. **Custom components**:
+
+```tsx
+// src/components/MyComponent.tsx
+import { Button } from "@/components/ui/button";
+
+export function MyComponent() {
+  return <Button>Click me</Button>;
+}
+```
+
+### Using State Management
+
+```tsx
+// Use Nanostores in React components
+import { useStore } from "@nanostores/react";
+import { searchStore } from "@/search/stores/search.store";
+
+export function SearchBar() {
+  const state = useStore(searchStore);
+  return <input value={state.query} />;
+}
+```
+
+### Styling Guidelines
+
+- Use **Tailwind CSS** utility classes
+- Use **shadcn/ui** design tokens (e.g., `bg-background`, `text-foreground`)
+- Avoid hardcoded colors - use CSS variables from `global.css`
+- Responsive: Mobile-first (`md:`, `lg:` breakpoints)
+
+---
+
+## 🎨 Design System
+
+### Brand Colors (Ailurus Red Panda Theme)
+
+```css
+/* Defined in src/styles/global.css */
+--ailurus-red: #e63946; /* Primary red */
+--ailurus-orange: #f77f00; /* Accent orange */
+```
+
+### shadcn/ui Tokens
+
+All components use CSS variables for theming:
+
+```css
+/* Light mode */
+--background: 0 0% 100%;
+--foreground: 240 10% 3.9%;
+--primary: 346 77% 57%; /* Ailurus red */
+--secondary: 25 95% 53%; /* Ailurus orange */
+
+/* Dark mode */
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+}
+```
+
+### Accessibility
+
+- **WCAG 2.2 AA** compliance achieved
+- All interactive elements have proper focus states
+- Aria-labels on toolbar buttons and form controls
+- Keyboard navigation supported
+- Respects `prefers-reduced-motion`
+
+---
+
+## 📜 Available Scripts
+
+```bash
+# Development
+pnpm dev              # Start dev server at localhost:4321
+
+# Build
+pnpm build            # Build for production (static site)
+pnpm preview          # Preview production build
+
+# Astro CLI
+pnpm astro --help     # View all Astro commands
+```
+
+---
+
+## 🗂️ Mock Data
+
+The frontend currently uses **mock data** (`src/mocks/documents.mock.ts`) to simulate backend responses.
+
+### Modifying Mock Data
+
+1. Edit `src/mocks/documents.mock.ts`
+2. Add/remove documents
+3. Run `pnpm build` to regenerate static pages
+
+**Note**: When backend is ready, replace mock services with API calls.
+
+---
+
+## 🤝 Contributing
+
+### Development Workflow
+
+1. Create a branch: `git checkout -b feature/my-feature`
+2. Make changes following code style
+3. Test locally: `pnpm dev`
+4. Build: `pnpm build` (verify no errors)
+5. Commit with descriptive messages
+6. Open Pull Request
+
+### Code Style
+
+- **TypeScript**: Strict mode enabled
+- **Formatting**: Prettier (automatic)
+- **Components**: Functional with TypeScript
+- **Naming**: PascalCase for components, camelCase for utilities
+
+### File Naming Conventions
+
+- `.astro` - SSR/static components
+- `.tsx` - React interactive components
+- `.ts` - Business logic, stores, utilities
+- `.store.ts` - Nanostores state
+- `.service.ts` - API/data services
+- `.util.ts` - Utility functions
+
+---
+
+## 📚 Documentation
+
+### Internal Documentation
+
+- **Architecture**: `ARCHITECTURE.md` (root)
+- **Frontend Architecture**: `docs/FRONTEND_ARCHITECTURE.md`
+- **Workplan**: `docs/WORKPLAN_FRONTEND_MOCK.md`
+- **Style Audit**: `frontend/STYLE_AUDIT.md`
+
+### External Resources
+
+- [Astro Documentation](https://docs.astro.build)
+- [shadcn/ui Documentation](https://ui.shadcn.com)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Nanostores](https://github.com/nanostores/nanostores)
+
+---
+
+## 🐛 Known Issues
+
+- ⚠️ **Vite Warning**: Large chunks from Shiki grammars (expected, heavily gzipped)
+- ⚠️ **Mock Data**: Limited to 15+ documents, no pagination
+- ⚠️ **No Backend**: API calls return mock responses
+
+---
+
+## 📝 Roadmap
+
+### Phase 6: Polish & Refinement ✅ (Completed)
+
+- [x] Custom 404 page
+- [x] Loading states (skeletons)
+- [x] SEO meta tags (Open Graph, Twitter Cards, JSON-LD)
+- [x] Page transitions and animations
+- [x] Development README
+
+### Phase 7: Backend Integration (Next)
+
+- [ ] Replace mock services with API calls
+- [ ] WebSocket for real-time presence
+- [ ] Image upload to backend
+- [ ] User authentication
+
+### Phase 8: Advanced Features
+
+- [ ] Server-side search
+- [ ] Real-time collaborative editing
+- [ ] Markdown editor upgrade (TipTap)
+- [ ] Analytics dashboard
+
+---
+
+**Status**: ✅ POC Complete - Ready for Backend Integration  
+**Version**: 0.1.0  
+**Last Updated**: January 2025
+
+---
+
+**Happy coding! 🦝✨**

@@ -1,0 +1,88 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Button } from "@/components/ui/button";
+---
+
+<Layout title="404 - Página no encontrada | Ailurus Docs">
+  <main class="min-h-screen flex items-center justify-center px-4 py-16">
+    <div class="text-center max-w-2xl mx-auto">
+      {/* Ailurus Brand Logo/Icon */}
+      <div class="mb-8 flex justify-center">
+        <div
+          class="w-24 h-24 rounded-full bg-gradient-to-br from-[#E63946] to-[#F77F00] flex items-center justify-center shadow-lg"
+        >
+          <span class="text-5xl" role="img" aria-label="Red Panda">🐾</span>
+        </div>
+      </div>
+
+      {/* Error Message */}
+      <h1 class="text-6xl font-bold text-foreground mb-4">404</h1>
+      <h2 class="text-2xl font-semibold text-foreground mb-4">
+        Página no encontrada
+      </h2>
+      <p class="text-muted-foreground text-lg mb-8">
+        Lo sentimos, la página que buscas no existe o ha sido movida. El panda
+        rojo no pudo encontrar este documento en su bambú.
+      </p>
+
+      {/* Navigation Actions */}
+      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <Button asChild size="lg" className="w-full sm:w-auto">
+          <a href="/"> Volver al inicio </a>
+        </Button>
+        <Button
+          asChild
+          variant="outline"
+          size="lg"
+          className="w-full sm:w-auto"
+        >
+          <a href="/docs"> Explorar documentos </a>
+        </Button>
+      </div>
+
+      {/* Helpful Links */}
+      <div class="mt-12 pt-8 border-t border-border">
+        <p class="text-sm text-muted-foreground mb-4">
+          ¿Necesitas ayuda? Intenta con estos enlaces:
+        </p>
+        <ul class="flex flex-wrap gap-4 justify-center text-sm">
+          <li>
+            <a href="/" class="text-primary hover:underline"> Inicio </a>
+          </li>
+          <li>
+            <a href="/docs" class="text-primary hover:underline">
+              Documentación
+            </a>
+          </li>
+          <li>
+            <a href="/search" class="text-primary hover:underline">
+              Búsqueda
+            </a>
+          </li>
+          <li>
+            <a href="/docs/new" class="text-primary hover:underline">
+              Nuevo Documento
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  /* Subtle animation for the logo */
+  @keyframes bounce-gentle {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  .w-24 {
+    animation: bounce-gentle 2s ease-in-out infinite;
+  }
+</style>

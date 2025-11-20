@@ -1,0 +1,222 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Separator } from "@/components/ui/separator";
+
+const lastUpdated = "19 de noviembre, 2025";
+---
+
+<Layout title="Terms of Use - Ailurus">
+  <main class="container max-w-4xl py-12 md:py-16">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold mb-2">Terms of Use</h1>
+      <p class="text-muted-foreground">
+        Última actualización: {lastUpdated}
+      </p>
+    </div>
+
+    <Separator className="my-8" />
+
+    <!-- Content -->
+    <div class="prose prose-slate dark:prose-invert max-w-none">
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">1. Aceptación de Términos</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Al usar Ailurus, aceptas estos términos de uso. Si no estás de acuerdo
+          con alguna parte de estos términos, no uses este software.
+        </p>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">2. Uso Permitido</h2>
+        <p class="text-muted-foreground leading-relaxed mb-4">
+          Ailurus es software de código abierto. Tienes permiso para:
+        </p>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="border border-green-500/20 bg-green-500/5 p-4 rounded-lg">
+            <h3
+              class="font-semibold text-green-600 dark:text-green-400 mb-2 flex items-center gap-2"
+            >
+              <span>✅</span> Permitido
+            </h3>
+            <ul class="space-y-2 text-sm text-muted-foreground">
+              <li>• Usar el software para cualquier propósito personal</li>
+              <li>• Usar el software en entornos corporativos internos</li>
+              <li>• Modificar el código fuente según tus necesidades</li>
+              <li>• Distribuir copias modificadas o sin modificar</li>
+              <li>• Estudiar cómo funciona el software</li>
+              <li>• Contribuir mejoras al proyecto</li>
+            </ul>
+          </div>
+
+          <div class="border border-red-500/20 bg-red-500/5 p-4 rounded-lg">
+            <h3
+              class="font-semibold text-red-600 dark:text-red-400 mb-2 flex items-center gap-2"
+            >
+              <span>❌</span> No Permitido
+            </h3>
+            <ul class="space-y-2 text-sm text-muted-foreground">
+              <li>• Vender el software como producto propio</li>
+              <li>• Comercializar versiones cerradas sin atribución</li>
+              <li>• Remover los avisos de copyright y licencia</li>
+              <li>
+                • Usar el nombre "Ailurus" para productos derivados sin permiso
+              </li>
+              <li>• Reclamar autoría del código original</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">3. Uso Comercial</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Si deseas usar Ailurus como parte de un <strong
+            >producto o servicio comercial</strong
+          >
+          (SaaS, hosting, etc.), por favor:
+        </p>
+        <ul class="space-y-2 text-muted-foreground mt-4">
+          <li>
+            • Contacta al mantenedor del proyecto para discutir tu caso de uso
+          </li>
+          <li>• Mantén la atribución clara y visible del proyecto original</li>
+          <li>• Considera contribuir mejoras de vuelta a la comunidad</li>
+        </ul>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">4. Modificaciones y Fork</h2>
+        <p class="text-muted-foreground leading-relaxed mb-4">
+          Puedes crear versiones modificadas (forks) de Ailurus siempre que:
+        </p>
+        <ul class="space-y-2 text-muted-foreground">
+          <li>✓ Mantengas el aviso de licencia MIT original</li>
+          <li>✓ Indiques claramente que es una versión modificada</li>
+          <li>✓ No impliques que el proyecto original respalda tu fork</li>
+          <li>
+            ✓ Compartas tus modificaciones bajo la misma licencia (MIT) si las
+            distribuyes
+          </li>
+        </ul>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">
+          5. Disclaimer (Exención de Responsabilidad)
+        </h2>
+        <div
+          class="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-lg"
+        >
+          <p class="text-muted-foreground leading-relaxed mb-4">
+            <strong
+              >EL SOFTWARE SE PROPORCIONA "TAL CUAL" (AS IS), SIN GARANTÍA DE
+              NINGÚN TIPO.</strong
+            >
+          </p>
+          <p class="text-muted-foreground leading-relaxed">
+            Los autores o titulares de copyright <strong
+              >NO son responsables</strong
+            >
+            de:
+          </p>
+          <ul class="space-y-2 text-muted-foreground mt-4">
+            <li>• Pérdida de datos o daños a tu sistema</li>
+            <li>• Problemas de seguridad en tu implementación</li>
+            <li>• Incompatibilidad con tu infraestructura</li>
+            <li>• Tiempo de inactividad o fallos del software</li>
+            <li>• Cualquier daño directo o indirecto derivado del uso</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">6. Sin Garantías</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Ailurus no ofrece garantías sobre:
+        </p>
+        <ul class="space-y-2 text-muted-foreground mt-4">
+          <li>• Funcionamiento sin errores o interrupciones</li>
+          <li>• Compatibilidad con versiones futuras</li>
+          <li>• Soporte técnico o tiempos de respuesta</li>
+          <li>• Corrección de bugs o implementación de features</li>
+        </ul>
+        <p class="text-muted-foreground leading-relaxed mt-4">
+          El desarrollo es <strong>comunitario y voluntario</strong>. Las
+          contribuciones son bienvenidas pero no obligatorias.
+        </p>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">7. Atribución y Créditos</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Ailurus fue construido sobre el trabajo de increíbles proyectos open
+          source. Si usas Ailurus, agradeceríamos que:
+        </p>
+        <ul class="space-y-2 text-muted-foreground mt-4">
+          <li>• Mantengas los créditos originales intactos</li>
+          <li>
+            • Consideres mencionar que usas Ailurus (no obligatorio, pero
+            apreciado)
+          </li>
+          <li>• Compartas feedback y mejoras con la comunidad</li>
+        </ul>
+        <p class="text-muted-foreground leading-relaxed mt-4">
+          Ver la lista completa de créditos en <a
+            href="/license"
+            class="text-ailurus-red hover:underline">/license</a
+          >.
+        </p>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">
+          8. Cambios en estos Términos
+        </h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Nos reservamos el derecho de modificar estos términos en cualquier
+          momento. Los cambios serán efectivos inmediatamente al publicarse en
+          este documento con una nueva fecha de actualización.
+        </p>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">9. Contacto y Preguntas</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Para preguntas sobre estos términos:
+        </p>
+        <ul class="space-y-2 text-muted-foreground mt-4">
+          <li>
+            • Abre un issue en{" "}
+            <a
+              href="https://github.com/amoralr/ailurus"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-ailurus-red hover:underline"
+            >
+              GitHub
+            </a>
+          </li>
+          <li>
+            • Consulta la documentación completa en <a
+              href="/docs"
+              class="text-ailurus-red hover:underline">/docs</a>
+          </li>
+        </ul>
+      </section>
+
+      <Separator className="my-8" />
+
+      <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r-lg mt-8">
+        <p class="text-sm text-muted-foreground">
+          <strong>Nota Legal:</strong> Estos términos no constituyen asesoría legal.
+          Para uso comercial o situaciones complejas, consulta con un abogado especializado.
+          La licencia oficial del proyecto es MIT - ver{" "}
+          <a href="/license" class="text-ailurus-red hover:underline"
+            >/license</a
+          > para el texto legal completo.
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>

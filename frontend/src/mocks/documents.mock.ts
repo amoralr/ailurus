@@ -4,6 +4,9 @@ export interface MockDocument {
   title: string;
   content: string;
   category: string;
+  subcategory?: string;
+  /** Hierarchical path for Obsidian-style navigation (e.g., 'Equipo/Proyecto/Getting Started') */
+  path?: string;
   status: 'draft' | 'published' | 'archived';
   createdAt: string;
   updatedAt: string;
@@ -26,12 +29,144 @@ export const MOCK_CATEGORIES: MockCategory[] = [
 ];
 
 export const MOCK_DOCUMENTS: MockDocument[] = [
+  // Equipo Overview
+  {
+    id: 16,
+    slug: 'equipo-overview',
+    title: 'Información del Equipo',
+    category: 'Equipo',
+    path: 'Equipo/Información del Equipo',
+    status: 'published',
+    createdAt: '2025-11-01T08:00:00Z',
+    updatedAt: '2025-11-18T10:00:00Z',
+    createdBy: 'Antonio Moral',
+    excerpt: 'Conoce al equipo detrás de Ailurus.',
+    content: `# Información del Equipo
+
+Bienvenido a la sección del equipo Ailurus. Aquí encontrarás información sobre el equipo de desarrollo.
+
+## Misión
+
+Crear una plataforma de documentación moderna, accesible y fácil de usar.
+
+## Equipo Core
+
+- **Antonio Moral** - Lead Developer
+- **Equipo Frontend** - Desarrollo de UI/UX
+- **Equipo Backend** - Arquitectura y API
+
+## Contacto
+
+Para preguntas o sugerencias, contáctanos en team@ailurus.dev
+`
+  },
+  // Proyecto Overview
+  {
+    id: 17,
+    slug: 'proyecto-overview',
+    title: 'Resumen del Proyecto',
+    category: 'Proyecto',
+    path: 'Equipo/Proyecto/Resumen del Proyecto',
+    status: 'published',
+    createdAt: '2025-11-01T08:30:00Z',
+    updatedAt: '2025-11-18T10:30:00Z',
+    createdBy: 'Antonio Moral',
+    excerpt: 'Visión general del proyecto Ailurus.',
+    content: `# Resumen del Proyecto
+
+Ailurus es una plataforma de documentación moderna construida con Astro y NestJS.
+
+## Objetivos
+
+1. **Simplicidad** - Fácil de usar y configurar
+2. **Performance** - Rápido y optimizado
+3. **Accesibilidad** - WCAG 2.2 AA compliant
+4. **Escalabilidad** - Preparado para crecer
+
+## Tecnologías
+
+- **Frontend**: Astro + React
+- **Backend**: NestJS + SQLite
+- **Real-time**: Socket.io
+
+## Roadmap
+
+Ver [ROADMAP.md](/docs/roadmap) para más detalles.
+`
+  },
+  // Getting Started Intro
+  {
+    id: 18,
+    slug: 'getting-started-intro',
+    title: 'Introducción',
+    category: 'Getting Started',
+    path: 'Equipo/Proyecto/Getting Started/Introducción',
+    status: 'published',
+    createdAt: '2025-11-01T09:00:00Z',
+    updatedAt: '2025-11-18T11:00:00Z',
+    createdBy: 'Antonio Moral',
+    excerpt: 'Primeros pasos con Ailurus.',
+    content: `# Introducción a Ailurus
+
+Bienvenido a la documentación de Ailurus, tu plataforma de documentación moderna.
+
+## ¿Qué es Ailurus?
+
+Ailurus es un framework de documentación que combina:
+
+- 🚀 **Velocidad**: SSR con Astro
+- 🎨 **Diseño**: UI moderna con Tailwind
+- 🔍 **Búsqueda**: Full-text search con SQLite FTS5
+- ✏️ **Editor**: Markdown con preview en tiempo real
+
+## Próximos Pasos
+
+1. [Instalación](/docs/instalacion)
+2. [Inicio Rápido](/docs/quick-start)
+3. [Configuración](/docs/configuracion)
+`
+  },
+  // Recursos Overview
+  {
+    id: 19,
+    slug: 'recursos-overview',
+    title: 'Información de Recursos',
+    category: 'Recursos',
+    path: 'Recursos/Información de Recursos',
+    status: 'published',
+    createdAt: '2025-11-01T07:00:00Z',
+    updatedAt: '2025-11-18T09:00:00Z',
+    createdBy: 'Antonio Moral',
+    excerpt: 'Recursos adicionales y enlaces útiles.',
+    content: `# Recursos
+
+Recursos adicionales para ayudarte con Ailurus.
+
+## Comunidad
+
+- [GitHub](https://github.com/ailurus/ailurus)
+- [Discord](https://discord.gg/ailurus)
+- [Twitter](https://twitter.com/ailurusdev)
+
+## Tutoriales
+
+- [Video Tutorials](https://youtube.com/ailurus)
+- [Blog Posts](https://ailurus.dev/blog)
+
+## Soporte
+
+- [GitHub Issues](https://github.com/ailurus/ailurus/issues)
+- Email: support@ailurus.dev
+`
+  },
   // Getting Started
   {
     id: 1,
     slug: 'instalacion',
     title: 'Guía de Instalación',
     category: 'Getting Started',
+    subcategory: 'Primeros Pasos',
+    path: 'Equipo/Proyecto/Getting Started/Primeros Pasos/Guía de Instalación',
     status: 'published',
     createdAt: '2025-11-01T10:00:00Z',
     updatedAt: '2025-11-18T14:30:00Z',
@@ -115,6 +250,8 @@ Una vez instalado, consulta la [Guía de Inicio Rápido](/docs/quick-start) para
     slug: 'quick-start',
     title: 'Inicio Rápido',
     category: 'Getting Started',
+    subcategory: 'Primeros Pasos',
+    path: 'Equipo/Proyecto/Getting Started/Primeros Pasos/Inicio Rápido',
     status: 'published',
     createdAt: '2025-11-02T09:00:00Z',
     updatedAt: '2025-11-17T16:20:00Z',
@@ -199,6 +336,8 @@ Cuando estés listo:
     slug: 'configuracion',
     title: 'Configuración Avanzada',
     category: 'Getting Started',
+    subcategory: 'Configuración',
+    path: 'Equipo/Proyecto/Getting Started/Configuración/Configuración Avanzada',
     status: 'published',
     createdAt: '2025-11-03T11:00:00Z',
     updatedAt: '2025-11-16T10:00:00Z',
@@ -305,6 +444,7 @@ Crea tu propio tema editando \`src/styles/themes/custom.css\`:
     slug: 'arquitectura',
     title: 'Arquitectura del Sistema',
     category: 'Architecture',
+    path: 'Equipo/Proyecto/Architecture/Arquitectura del Sistema',
     status: 'published',
     createdAt: '2025-11-04T14:00:00Z',
     updatedAt: '2025-11-18T09:00:00Z',
@@ -430,6 +570,7 @@ socket.broadcast.emit('user-editing', {
     slug: 'frontend-architecture',
     title: 'Arquitectura del Frontend',
     category: 'Architecture',
+    path: 'Equipo/Proyecto/Architecture/Arquitectura del Frontend',
     status: 'published',
     createdAt: '2025-11-05T10:00:00Z',
     updatedAt: '2025-11-17T13:00:00Z',
@@ -554,6 +695,7 @@ export const apiService = new ApiService();
     slug: 'backend-architecture',
     title: 'Arquitectura del Backend',
     category: 'Architecture',
+    path: 'Equipo/Proyecto/Architecture/Arquitectura del Backend',
     status: 'published',
     createdAt: '2025-11-06T09:00:00Z',
     updatedAt: '2025-11-15T11:00:00Z',
@@ -663,6 +805,7 @@ export class Document {
     slug: 'database-schema',
     title: 'Database Schema',
     category: 'Architecture',
+    path: 'Equipo/Proyecto/Architecture/Database Schema',
     status: 'published',
     createdAt: '2025-11-07T15:00:00Z',
     updatedAt: '2025-11-14T16:00:00Z',
@@ -788,6 +931,7 @@ ORDER BY updated_at DESC;
     slug: 'api-overview',
     title: 'API Overview',
     category: 'API Reference',
+    path: 'Equipo/Proyecto/API Reference/API Overview',
     status: 'published',
     createdAt: '2025-11-08T10:00:00Z',
     updatedAt: '2025-11-18T10:00:00Z',
@@ -879,6 +1023,7 @@ Authorization: Bearer {jwt_token}
     slug: 'api-documents',
     title: 'Documents API',
     category: 'API Reference',
+    path: 'Equipo/Proyecto/API Reference/Documents API',
     status: 'published',
     createdAt: '2025-11-09T11:00:00Z',
     updatedAt: '2025-11-17T14:00:00Z',
@@ -1041,6 +1186,7 @@ Elimina un documento (soft delete).
     slug: 'api-search',
     title: 'Search API',
     category: 'API Reference',
+    path: 'Equipo/Proyecto/API Reference/Search API',
     status: 'published',
     createdAt: '2025-11-10T12:00:00Z',
     updatedAt: '2025-11-16T09:00:00Z',
@@ -1157,6 +1303,7 @@ VALUES (?, ?, ?);
     slug: 'api-upload',
     title: 'Upload API',
     category: 'API Reference',
+    path: 'Equipo/Proyecto/API Reference/Upload API',
     status: 'published',
     createdAt: '2025-11-11T13:00:00Z',
     updatedAt: '2025-11-15T10:00:00Z',
@@ -1253,6 +1400,7 @@ public/uploads/images/
     slug: 'api-websocket',
     title: 'WebSocket API',
     category: 'API Reference',
+    path: 'Equipo/Proyecto/API Reference/WebSocket API',
     status: 'published',
     createdAt: '2025-11-12T14:00:00Z',
     updatedAt: '2025-11-14T15:00:00Z',
@@ -1375,6 +1523,7 @@ socket.on('disconnect', () => {
     slug: 'editor-guide',
     title: 'Guía del Editor',
     category: 'Guides',
+    path: 'Equipo/Proyecto/Guides/Guía del Editor',
     status: 'published',
     createdAt: '2025-11-13T10:00:00Z',
     updatedAt: '2025-11-18T11:00:00Z',
@@ -1481,6 +1630,7 @@ Si otro usuario está editando verás:
     slug: 'markdown-syntax',
     title: 'Markdown Syntax',
     category: 'Guides',
+    path: 'Equipo/Proyecto/Guides/Markdown Syntax',
     status: 'published',
     createdAt: '2025-11-14T11:00:00Z',
     updatedAt: '2025-11-17T12:00:00Z',
@@ -1650,6 +1800,7 @@ graph TD
     slug: 'deployment',
     title: 'Deployment Guide',
     category: 'Guides',
+    path: 'Equipo/Proyecto/Guides/Deployment Guide',
     status: 'published',
     createdAt: '2025-11-15T12:00:00Z',
     updatedAt: '2025-11-16T14:00:00Z',

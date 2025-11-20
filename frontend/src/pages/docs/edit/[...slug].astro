@@ -1,0 +1,27 @@
+---
+import EditorLayout from "@/layouts/EditorLayout.astro";
+import { MarkdownEditor } from "@/editor/components/MarkdownEditor";
+import { MOCK_DOCUMENTS } from "@/mocks/documents.mock";
+
+export function getStaticPaths() {
+  return MOCK_DOCUMENTS.map((doc) => ({
+    params: { slug: doc.slug },
+    props: { doc },
+  }));
+}
+
+const { doc } = Astro.props;
+
+if (!doc) {
+  return Astro.redirect("/404");
+}
+---
+
+<EditorLayout title={`Editar: ${doc.title}`}>
+  <MarkdownEditor
+    client:load
+    slug={doc.slug}
+    initialContent={doc.content}
+    title={doc.title}
+  />
+</EditorLayout>

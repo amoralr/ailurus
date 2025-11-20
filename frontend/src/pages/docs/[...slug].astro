@@ -46,6 +46,10 @@ const nextDoc =
 <DocsLayout
   title={`${document.title} - Ailurus`}
   description={document.excerpt}
+  ogType="article"
+  author={document.createdBy}
+  publishedTime={document.createdAt}
+  modifiedTime={document.updatedAt}
 >
   <Sidebar slot="sidebar" currentSlug={slug} />
 
@@ -127,7 +131,7 @@ const nextDoc =
   .document-header {
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid hsl(var(--border));
   }
 
   .document-meta {
@@ -139,14 +143,14 @@ const nextDoc =
 
   .update-date {
     font-size: 0.875rem;
-    color: var(--color-text-secondary);
+    color: hsl(var(--muted-foreground));
   }
 
   .document-title {
     font-size: 2.5rem;
     font-weight: 700;
     margin: 0 0 1rem 0;
-    color: var(--color-text-primary);
+    color: hsl(var(--foreground));
     line-height: 1.2;
   }
 
@@ -161,18 +165,18 @@ const nextDoc =
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
-    color: var(--color-text-primary);
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
+    color: hsl(var(--foreground));
+    background: hsl(var(--secondary));
+    border: 1px solid hsl(var(--border));
     border-radius: 0.375rem;
     text-decoration: none;
     transition: all 0.2s;
   }
 
   .edit-link:hover {
-    border-color: #ff9800;
-    color: #ff9800;
-    background: rgba(255, 152, 0, 0.1);
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
   }
 
   .edit-link svg {
@@ -187,7 +191,7 @@ const nextDoc =
   .document-footer {
     margin-top: 4rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid hsl(var(--border));
   }
 
   .document-info {
@@ -196,12 +200,12 @@ const nextDoc =
 
   .author {
     font-size: 0.875rem;
-    color: var(--color-text-secondary);
+    color: hsl(var(--muted-foreground));
     margin: 0;
   }
 
   .author strong {
-    color: var(--color-text-primary);
+    color: hsl(var(--foreground));
   }
 
   .document-navigation {
@@ -214,16 +218,16 @@ const nextDoc =
     display: flex;
     flex-direction: column;
     padding: 1rem;
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
+    background: hsl(var(--secondary));
+    border: 1px solid hsl(var(--border));
     border-radius: 0.5rem;
     text-decoration: none;
     transition: all 0.2s;
   }
 
   .nav-link:hover {
-    border-color: #ff9800;
-    background: rgba(255, 152, 0, 0.05);
+    border-color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.05);
   }
 
   .nav-link.next {
@@ -234,7 +238,7 @@ const nextDoc =
   .nav-label {
     font-size: 0.75rem;
     font-weight: 500;
-    color: #ff9800;
+    color: hsl(var(--primary));
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 0.25rem;
@@ -243,7 +247,7 @@ const nextDoc =
   .nav-title {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--color-text-primary);
+    color: hsl(var(--foreground));
   }
 
   /* Responsive */

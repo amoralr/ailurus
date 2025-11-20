@@ -13,27 +13,26 @@
   * {
     @apply border-border;
   }
+  
+  /* Smooth theme transitions */
+  :root {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  html {
+    background-color: hsl(var(--background));
+  }
+  
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
 /* Custom Ailurus Styles */
 @layer components {
-  .ailurus-gradient {
-    @apply bg-gradient-to-r from-ailurus-red via-ailurus-orange to-ailurus-red;
-  }
-
   .ailurus-text-gradient {
     @apply bg-gradient-to-r from-ailurus-red via-ailurus-orange to-ailurus-red bg-clip-text text-transparent;
-  }
-
-  .ailurus-card {
-    @apply rounded-lg border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md;
-  }
-
-  .ailurus-button {
-    @apply inline-flex items-center justify-center rounded-md bg-ailurus-red px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-ailurus-red/90;
   }
 
   /* Pixel Art Logo Rendering */

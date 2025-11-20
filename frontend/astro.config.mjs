@@ -6,6 +6,7 @@ import tailwind from '@astrojs/tailwind';
 // https://astro.build/config
 export default defineConfig({
   output: 'static', // Static site generation por ahora, cambiar a 'server' cuando se implemente backend
+  site: 'https://ailurus-docs.dev', // Change to your production domain
   
   integrations: [
     react(),

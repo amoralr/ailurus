@@ -1,0 +1,310 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+const lastUpdated = "15 de noviembre, 2025";
+---
+
+<Layout title="Backend Architecture - Ailurus">
+  <main class="container max-w-5xl py-12 md:py-16">
+    <!-- Breadcrumb -->
+    <nav class="mb-6 text-sm text-muted-foreground">
+      <a
+        href="/architecture"
+        class="hover:text-ailurus-orange transition-colors">🏗️ Architecture</a
+      >
+      <span class="mx-2">/</span>
+      <span class="text-foreground">🚀 Backend</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-3">
+        <h1 class="text-4xl font-bold">🚀 Backend Architecture</h1>
+      </div>
+      <p class="text-muted-foreground text-lg">
+        Estructura y patrones del backend NestJS
+      </p>
+      <p class="text-sm text-muted-foreground mt-2">
+        Última actualización: {lastUpdated}
+      </p>
+    </div>
+
+    <Separator className="my-8" />
+
+    <!-- Overview -->
+    <section class="mb-12">
+      <p class="text-muted-foreground leading-relaxed text-lg mb-6">
+        Backend construido con <strong>NestJS</strong> siguiendo principios SOLID.
+      </p>
+    </section>
+
+    <!-- Module Structure -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">📦 Estructura de Módulos</h2>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`src/
+├── documents/
+│   ├── documents.controller.ts
+│   ├── documents.service.ts
+│   ├── documents.module.ts
+│   └── dto/
+├── search/
+├── upload/
+└── websocket/`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Repository Pattern -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🗄️ Patrón Repository</h2>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`@Injectable()
+export class DocumentsService {
+  constructor(
+    @InjectRepository(Document)
+    private documentsRepository: Repository<Document>,
+  ) {}
+
+  async findBySlug(slug: string): Promise<Document> {
+    return this.documentsRepository.findOne({
+      where: { slug },
+    });
+  }
+}`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- DTOs and Validation -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">✅ DTOs y Validación</h2>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`export class CreateDocumentDto {
+  @IsString()
+  @MinLength(3)
+  title: string;
+
+  @IsString()
+  content: string;
+
+  @IsOptional()
+  @IsString()
+  category?: string;
+}`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- WebSocket Gateway -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🔌 WebSocket Gateway</h2>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`@WebSocketGateway()
+export class PresenceGateway {
+  @SubscribeMessage('editing-start')
+  handleEditingStart(
+    @MessageBody() data: EditingStartDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.broadcast.emit('user-editing', data);
+  }
+}`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Database with TypeORM -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">💾 Database con TypeORM</h2>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`@Entity()
+export class Document {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ unique: true })
+  slug: string;
+
+  @Column('text')
+  content: string;
+
+  @Column({ type: 'varchar', default: 'draft' })
+  status: 'draft' | 'published' | 'archived';
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Key Features -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🎯 Características Clave</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span>🏗️</span> Modular
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            <p>
+              Arquitectura basada en módulos NestJS para mejor organización y
+              escalabilidad.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span>🔒</span> Type-Safe
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            <p>
+              TypeScript en todo el backend con decoradores y validación
+              automática.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span>💉</span> Dependency Injection
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            <p>DI nativo de NestJS para mejor testeo y mantenibilidad.</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span>🧪</span> Testeable
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            <p>
+              Diseño que facilita unit tests, integration tests y E2E testing.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Related Links -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">📚 Documentación Relacionada</h2>
+
+      <div class="grid md:grid-cols-3 gap-4">
+        <a href="/architecture" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Architecture Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Visión general de la arquitectura
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/architecture/frontend" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Frontend Architecture
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Detalles del frontend con Astro
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/architecture/database" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Database Schema
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Esquema de base de datos
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/docs/api-overview" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                API Reference
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Documentación de API REST
+            </CardContent>
+          </Card>
+        </a>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Back to Docs -->
+    <section class="text-center py-8">
+      <a
+        href="/docs"
+        class="inline-flex items-center gap-2 px-6 py-3 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-lg transition-colors"
+      >
+        ← Volver a Documentación
+      </a>
+    </section>
+  </main>
+</Layout>

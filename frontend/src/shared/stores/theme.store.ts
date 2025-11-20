@@ -27,12 +27,17 @@ export const setTheme = (theme: Theme) => {
   
   if (typeof window !== 'undefined') {
     localStorage.setItem(THEME_KEY, theme);
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }
 };
 
-// Initialize theme on load
+// Initialize theme on load (sync with inline script)
 if (typeof window !== 'undefined') {
   const savedTheme = getInitialTheme();
-  document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+  themeStore.set(savedTheme);
 }

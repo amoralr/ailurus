@@ -1,0 +1,859 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+const lastUpdated = "19 de noviembre, 2025";
+const version = "POC v0.1";
+---
+
+<Layout title="Architecture - Ailurus">
+  <main class="container max-w-6xl py-12 md:py-16">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-3">
+        <h1 class="text-4xl font-bold">🏗️ Architecture</h1>
+        <Badge variant="outline" className="text-sm">{version}</Badge>
+      </div>
+      <p class="text-muted-foreground text-lg">
+        Arquitectura técnica completa del framework Ailurus
+      </p>
+      <p class="text-sm text-muted-foreground mt-2">
+        Última actualización: {lastUpdated}
+      </p>
+    </div>
+
+    <Separator className="my-8" />
+
+    <!-- Vision Overview -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-4">📋 Visión General</h2>
+      <p class="text-muted-foreground leading-relaxed mb-6">
+        Sistema de documentación colaborativo con edición en tiempo real,
+        inspirado en Obsidian, compuesto por dos aplicaciones independientes:
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-2xl">⚡</span>
+              Frontend
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p class="text-muted-foreground mb-4">
+              Astro SSR para renderizado dinámico de documentación
+            </p>
+            <ul class="space-y-2 text-sm text-muted-foreground">
+              <li>✓ Server-Side Rendering (SSR)</li>
+              <li>✓ Islands Architecture</li>
+              <li>✓ SEO optimizado</li>
+              <li>✓ Performance first</li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-2xl">🚀</span>
+              Backend
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p class="text-muted-foreground mb-4">
+              NestJS API REST + WebSocket para gestión de contenido
+            </p>
+            <ul class="space-y-2 text-sm text-muted-foreground">
+              <li>✓ TypeScript strict mode</li>
+              <li>✓ Modular architecture</li>
+              <li>✓ WebSocket support</li>
+              <li>✓ Type-safe ORM (Prisma)</li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-ailurus-orange/20 bg-ailurus-orange/5">
+        <CardHeader>
+          <CardTitle className="text-lg">Características Principales</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="grid md:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+            <div class="flex items-center gap-2">
+              <span class="text-ailurus-orange">✍️</span>
+              <span>Edición Markdown con preview real-time</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-ailurus-orange">👥</span>
+              <span>Colaboración con presencia en tiempo real</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-ailurus-orange">🔍</span>
+              <span>Búsqueda full-text con SQLite FTS5</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-ailurus-orange">📊</span>
+              <span>Analytics personalizado</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-ailurus-orange">🎨</span>
+              <span>Dark mode y UI moderna</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-ailurus-orange">📱</span>
+              <span>Responsive y accesible (WCAG 2.2 AA)</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- High Level Architecture Diagram -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🏛️ Arquitectura de Alto Nivel</h2>
+
+      <div class="bg-muted/30 border rounded-lg p-8 overflow-x-auto">
+        <pre
+          class="text-sm leading-relaxed font-mono"><code>{`┌─────────────────────────────────────────────────────────────┐
+│                         CLIENTE                              │
+│  Browser (Chrome, Firefox, Safari, Edge)                    │
+└────────────┬────────────────────────────────────────────────┘
+             │ HTTP/HTTPS + WebSocket
+             │
+┌────────────▼────────────────────────────────────────────────┐
+│                    FRONTEND LAYER                            │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │           Astro SSR Server (Port 4321)               │  │
+│  │                                                       │  │
+│  │  • Pages: /docs/[...slug]                           │  │
+│  │  • Components: Editor, Sidebar, TOC, Search         │  │
+│  │  • Markdown rendering con Marked + Shiki           │  │
+│  │  • React Islands para interactividad                │  │
+│  │                                                       │  │
+│  └──────────────────────────────────────────────────────┘  │
+└────────────┬────────────────────────────────────────────────┘
+             │ REST API (HTTP) + WebSocket
+             │
+┌────────────▼────────────────────────────────────────────────┐
+│                     BACKEND LAYER                            │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │           NestJS API Server (Port 3000)              │  │
+│  │                                                       │  │
+│  │  • REST Controllers: /documents, /search            │  │
+│  │  • WebSocket Gateway: /presence                     │  │
+│  │  • Services: Document, Search, Upload, Analytics    │  │
+│  │  • Guards: Rate limiting, Validation                │  │
+│  │                                                       │  │
+│  └──────────────────────────────────────────────────────┘  │
+└────────────┬────────────────────────────────────────────────┘
+             │
+┌────────────▼────────────────────────────────────────────────┐
+│                    STORAGE LAYER                             │
+│                                                              │
+│  ┌─────────────────────┐      ┌─────────────────────────┐  │
+│  │   SQLite Database   │      │   File System           │  │
+│  │   (documents.db)    │      │   (/uploads/images/)    │  │
+│  │                     │      │                         │  │
+│  │  • documents        │      │  • Imágenes optimizadas │  │
+│  │  • documents_fts    │      │  • WebP + JPEG fallback │  │
+│  │  • analytics_events │      │                         │  │
+│  │  • search_logs      │      │                         │  │
+│  └─────────────────────┘      └─────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Data Flow -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🔄 Flujo de Datos Principal</h2>
+
+      <div class="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl"
+              >Lectura de Documentación (SSR)</CardTitle
+            >
+          </CardHeader>
+          <CardContent>
+            <div
+              class="bg-muted/50 rounded p-4 font-mono text-sm overflow-x-auto"
+            >
+              <code
+                >Usuario → Astro SSR → NestJS API → SQLite → NestJS → Astro →
+                HTML → Usuario</code
+              >
+              <div class="text-xs text-muted-foreground mt-2 ml-8">
+                /docs/slug → GET /api/documents/:slug → SELECT → JSON → Render
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Edición de Documento</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="bg-muted/50 rounded p-4 font-mono text-sm overflow-x-auto"
+            >
+              <code>Usuario → Editor → NestJS API → SQLite</code>
+              <div class="text-xs text-muted-foreground mt-2 ml-8">
+                Typing → PUT /api/documents/:id/draft → UPDATE
+              </div>
+              <div class="text-xs text-muted-foreground mt-2 ml-8">
+                ↓ WebSocket broadcast → Otros usuarios ven presencia
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Búsqueda Full-Text</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="bg-muted/50 rounded p-4 font-mono text-sm overflow-x-auto"
+            >
+              <code
+                >Usuario → Search Bar → NestJS API → SQLite FTS5 → Resultados</code
+              >
+              <div class="text-xs text-muted-foreground mt-2 ml-8">
+                Query → GET /api/search?q=... → FTS5 MATCH → Log + Results
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Tech Stack -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🔧 Stack Tecnológico</h2>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="border-blue-500/20">
+          <CardHeader>
+            <Badge
+              className="w-fit mb-2 bg-blue-500/10 text-blue-600 border-blue-500/20"
+            >
+              Frontend Core
+            </Badge>
+            <CardTitle className="text-lg">Astro ^5.15.9</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            SSR flexible con Islands Architecture para performance óptima
+          </CardContent>
+        </Card>
+
+        <Card className="border-green-500/20">
+          <CardHeader>
+            <Badge
+              className="w-fit mb-2 bg-green-500/10 text-green-600 border-green-500/20"
+            >
+              Backend Core
+            </Badge>
+            <CardTitle className="text-lg">NestJS ^10.0.0</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Framework TypeScript modular y enterprise-ready
+          </CardContent>
+        </Card>
+
+        <Card className="border-purple-500/20">
+          <CardHeader>
+            <Badge
+              className="w-fit mb-2 bg-purple-500/10 text-purple-600 border-purple-500/20"
+            >
+              Database
+            </Badge>
+            <CardTitle className="text-lg">SQLite + FTS5</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Base de datos embebida con búsqueda full-text integrada
+          </CardContent>
+        </Card>
+
+        <Card className="border-orange-500/20">
+          <CardHeader>
+            <Badge
+              className="w-fit mb-2 bg-orange-500/10 text-orange-600 border-orange-500/20"
+            >
+              UI Framework
+            </Badge>
+            <CardTitle className="text-lg">Tailwind CSS</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Utility-first CSS con shadcn/ui components
+          </CardContent>
+        </Card>
+
+        <Card className="border-red-500/20">
+          <CardHeader>
+            <Badge
+              className="w-fit mb-2 bg-red-500/10 text-red-600 border-red-500/20"
+            >
+              Real-time
+            </Badge>
+            <CardTitle className="text-lg">Socket.io ^4.7.0</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            WebSocket para presencia y colaboración en tiempo real
+          </CardContent>
+        </Card>
+
+        <Card className="border-yellow-500/20">
+          <CardHeader>
+            <Badge
+              className="w-fit mb-2 bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
+            >
+              Markdown
+            </Badge>
+            <CardTitle className="text-lg">Marked + Shiki</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Parser rápido con syntax highlighting profesional
+          </CardContent>
+        </Card>
+      </div>
+
+      <div class="mt-8">
+        <h3 class="text-xl font-semibold mb-4">Stack Completo</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="border-b">
+              <tr class="text-left">
+                <th class="py-2 px-4 font-semibold">Categoría</th>
+                <th class="py-2 px-4 font-semibold">Tecnología</th>
+                <th class="py-2 px-4 font-semibold">Versión</th>
+                <th class="py-2 px-4 font-semibold">Propósito</th>
+              </tr>
+            </thead>
+            <tbody class="text-muted-foreground">
+              <tr class="border-b">
+                <td class="py-2 px-4">Frontend</td>
+                <td class="py-2 px-4 font-mono">Astro</td>
+                <td class="py-2 px-4">^5.15.9</td>
+                <td class="py-2 px-4">SSR Framework</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">Frontend</td>
+                <td class="py-2 px-4 font-mono">React</td>
+                <td class="py-2 px-4">^19.2.0</td>
+                <td class="py-2 px-4">Interactive Islands</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">Backend</td>
+                <td class="py-2 px-4 font-mono">NestJS</td>
+                <td class="py-2 px-4">^10.0.0</td>
+                <td class="py-2 px-4">API Framework</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">Database</td>
+                <td class="py-2 px-4 font-mono">SQLite</td>
+                <td class="py-2 px-4">^3.45.0</td>
+                <td class="py-2 px-4">Embedded DB</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">ORM</td>
+                <td class="py-2 px-4 font-mono">Prisma</td>
+                <td class="py-2 px-4">^5.7.0</td>
+                <td class="py-2 px-4">Type-safe queries</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">Styling</td>
+                <td class="py-2 px-4 font-mono">Tailwind CSS</td>
+                <td class="py-2 px-4">^3.4.18</td>
+                <td class="py-2 px-4">Utility-first CSS</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">Components</td>
+                <td class="py-2 px-4 font-mono">shadcn/ui</td>
+                <td class="py-2 px-4">latest</td>
+                <td class="py-2 px-4">Accessible UI</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">State</td>
+                <td class="py-2 px-4 font-mono">Nanostores</td>
+                <td class="py-2 px-4">^1.0.1</td>
+                <td class="py-2 px-4">Global state</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">Search</td>
+                <td class="py-2 px-4 font-mono">SQLite FTS5</td>
+                <td class="py-2 px-4">Built-in</td>
+                <td class="py-2 px-4">Full-text search</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">Markdown</td>
+                <td class="py-2 px-4 font-mono">Marked</td>
+                <td class="py-2 px-4">^17.0.0</td>
+                <td class="py-2 px-4">Parser</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">Highlighting</td>
+                <td class="py-2 px-4 font-mono">Shiki</td>
+                <td class="py-2 px-4">^3.15.0</td>
+                <td class="py-2 px-4">Code syntax</td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-4">Images</td>
+                <td class="py-2 px-4 font-mono">Sharp</td>
+                <td class="py-2 px-4">^0.33.0</td>
+                <td class="py-2 px-4">Optimization</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Design Principles -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🎨 Principios de Diseño</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">🔀</span>
+              Separación de Responsabilidades
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>• <strong>Astro:</strong> Solo presentación y UX</p>
+            <p>• <strong>NestJS:</strong> Solo lógica de negocio y datos</p>
+            <p>
+              • <strong>Sin código compartido:</strong> Comunicación vía API
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">📈</span>
+              Progressive Enhancement
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>• Funciona sin JavaScript (SSR)</p>
+            <p>• JavaScript mejora experiencia</p>
+            <p>• Fallbacks para features avanzadas</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">⚡</span>
+              Performance First
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>• SSR para SEO y carga inicial rápida</p>
+            <p>• Lazy loading de imágenes</p>
+            <p>• Code splitting automático</p>
+            <p>• Cache en headers HTTP</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">🎯</span>
+              Simplicity over Complexity
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>• SQLite sobre PostgreSQL (POC)</p>
+            <p>• Storage local sobre S3 (POC)</p>
+            <p>• REST sobre GraphQL</p>
+            <p>• No microservicios (aún)</p>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Key Decisions -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🎯 Decisiones de Arquitectura</h2>
+
+      <div class="space-y-4">
+        <details class="group border rounded-lg">
+          <summary
+            class="cursor-pointer p-4 font-semibold hover:bg-muted/50 transition-colors"
+          >
+            ¿Por qué Astro y no Next.js?
+          </summary>
+          <div class="p-4 pt-0 space-y-3 text-sm text-muted-foreground">
+            <div>
+              <p class="font-semibold text-green-600 mb-2">✅ Astro</p>
+              <ul class="space-y-1 ml-4">
+                <li>• Mejor performance (menos JS por defecto)</li>
+                <li>
+                  • Islands Architecture (componentes interactivos solo donde se
+                  necesitan)
+                </li>
+                <li>• Agnóstico a frameworks (React, Vue, Svelte)</li>
+                <li>• SSR flexible y SSG cuando convenga</li>
+              </ul>
+            </div>
+            <div>
+              <p class="font-semibold text-red-600 mb-2">❌ Next.js</p>
+              <ul class="space-y-1 ml-4">
+                <li>• Más complejo, más JS en cliente</li>
+                <li>• Más opinado, menos flexible</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border rounded-lg">
+          <summary
+            class="cursor-pointer p-4 font-semibold hover:bg-muted/50 transition-colors"
+          >
+            ¿Por qué NestJS y no Express?
+          </summary>
+          <div class="p-4 pt-0 space-y-3 text-sm text-muted-foreground">
+            <div>
+              <p class="font-semibold text-green-600 mb-2">✅ NestJS</p>
+              <ul class="space-y-1 ml-4">
+                <li>• TypeScript first con decoradores</li>
+                <li>• Arquitectura modular y testeable</li>
+                <li>• DI (Dependency Injection) integrado</li>
+                <li>• WebSocket support nativo</li>
+                <li>• Más estructura para proyectos escalables</li>
+              </ul>
+            </div>
+            <div>
+              <p class="font-semibold text-red-600 mb-2">❌ Express</p>
+              <ul class="space-y-1 ml-4">
+                <li>• Menos estructura, más decisiones manuales</li>
+                <li>• Setup de TypeScript más complejo</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border rounded-lg">
+          <summary
+            class="cursor-pointer p-4 font-semibold hover:bg-muted/50 transition-colors"
+          >
+            ¿Por qué SQLite y no PostgreSQL?
+          </summary>
+          <div class="p-4 pt-0 space-y-3 text-sm text-muted-foreground">
+            <div>
+              <p class="font-semibold text-green-600 mb-2">
+                ✅ SQLite para POC
+              </p>
+              <ul class="space-y-1 ml-4">
+                <li>• Sin servidor adicional (zero-config)</li>
+                <li>• Setup instantáneo</li>
+                <li>• FTS5 integrado para búsqueda full-text</li>
+                <li>• Suficiente para 1000+ documentos</li>
+                <li>• Migración a Postgres simple después</li>
+              </ul>
+            </div>
+            <div>
+              <p class="font-semibold text-red-600 mb-2">❌ PostgreSQL</p>
+              <ul class="space-y-1 ml-4">
+                <li>• Overhead innecesario para POC</li>
+                <li>• Requiere servidor separado</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border rounded-lg">
+          <summary
+            class="cursor-pointer p-4 font-semibold hover:bg-muted/50 transition-colors"
+          >
+            ¿Por qué Prisma y no SQL directo?
+          </summary>
+          <div class="p-4 pt-0 space-y-3 text-sm text-muted-foreground">
+            <div>
+              <p class="font-semibold text-green-600 mb-2">✅ Prisma</p>
+              <ul class="space-y-1 ml-4">
+                <li>• Type-safety completo con TypeScript</li>
+                <li>• Migraciones automáticas versionadas</li>
+                <li>• Developer experience excepcional</li>
+                <li>• Prisma Studio para debugging visual</li>
+                <li>• Fácil migración entre bases de datos</li>
+                <li>• Raw SQL disponible para casos especiales (FTS5)</li>
+              </ul>
+            </div>
+            <div>
+              <p class="font-semibold text-red-600 mb-2">❌ SQL directo</p>
+              <ul class="space-y-1 ml-4">
+                <li>• Más propenso a errores</li>
+                <li>• Sin types ni autocomplete</li>
+                <li>• Migraciones manuales</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Roadmap -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">📈 Roadmap</h2>
+
+      <div class="space-y-4">
+        <Card className="border-green-500/30 bg-green-500/5">
+          <CardHeader>
+            <div class="flex items-center justify-between">
+              <CardTitle className="text-xl">POC v0.1 (Actual)</CardTitle>
+              <Badge className="bg-green-500 text-white">Completado</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="grid md:grid-cols-2 gap-3 text-sm text-muted-foreground"
+            >
+              <div>✅ Editor Markdown básico</div>
+              <div>✅ Sistema de drafts con auto-save</div>
+              <div>✅ WebSocket para presencia</div>
+              <div>✅ Búsqueda FTS5 básica</div>
+              <div>✅ Storage local de imágenes</div>
+              <div>✅ Dark mode</div>
+              <div>✅ Sidebar + TOC</div>
+              <div>✅ Analytics simple</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-blue-500/30 bg-blue-500/5">
+          <CardHeader>
+            <div class="flex items-center justify-between">
+              <CardTitle className="text-xl">v0.5 (+2-3 semanas)</CardTitle>
+              <Badge
+                variant="outline"
+                className="border-blue-500/30 text-blue-600"
+              >
+                Próximo
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="grid md:grid-cols-2 gap-3 text-sm text-muted-foreground"
+            >
+              <div>🔜 Editor inline mejorado</div>
+              <div>🔜 Sistema de Review con roles básicos</div>
+              <div>🔜 Versionado de documentos</div>
+              <div>🔜 Búsqueda con sugerencias</div>
+              <div>🔜 Dashboard de analytics</div>
+              <div>🔜 Autenticación JWT</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-purple-500/30 bg-purple-500/5">
+          <CardHeader>
+            <div class="flex items-center justify-between">
+              <CardTitle className="text-xl">v1.0 (+3-4 semanas)</CardTitle>
+              <Badge
+                variant="outline"
+                className="border-purple-500/30 text-purple-600"
+              >
+                Futuro
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="grid md:grid-cols-2 gap-3 text-sm text-muted-foreground"
+            >
+              <div>🚀 Editor avanzado (TipTap/ProseMirror)</div>
+              <div>🚀 Real-time text collaboration</div>
+              <div>🚀 RBAC completo</div>
+              <div>🚀 Performance optimizations</div>
+              <div>🚀 Cache strategy avanzada</div>
+              <div>🚀 Testing E2E completo</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Documentation Links -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">📚 Documentación Relacionada</h2>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a href="/docs/arquitectura" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Arquitectura Detallada (Docs)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Documentación técnica completa del sistema
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/architecture/frontend" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Frontend Architecture
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Detalles de la arquitectura del frontend
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/architecture/backend" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Backend Architecture
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Estructura y patrones del backend
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/architecture/database" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Database Schema
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Esquema completo de base de datos
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/docs/api-overview" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                API Reference
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Endpoints y contratos de API
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/license" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                License & Credits
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              MIT License y agradecimientos
+            </CardContent>
+          </Card>
+        </a>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Contact -->
+    <section class="text-center py-8">
+      <h2 class="text-2xl font-bold mb-4">¿Preguntas sobre la Arquitectura?</h2>
+      <p class="text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-6">
+        Si tienes dudas sobre decisiones arquitectónicas o quieres contribuir al
+        proyecto, abre un issue en GitHub o revisa la documentación completa.
+      </p>
+      <div class="flex gap-4 justify-center">
+        <a
+          href="https://github.com/amoralr/ailurus"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-ailurus-red text-white rounded-lg hover:bg-ailurus-red/90 transition-colors"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path
+              d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+            ></path>
+          </svg>
+          Ver en GitHub
+        </a>
+        <a
+          href="/docs"
+          class="inline-flex items-center gap-2 px-6 py-3 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-lg transition-colors"
+        >
+          📚 Documentación Completa
+        </a>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  details summary {
+    list-style: none;
+  }
+  details summary::-webkit-details-marker {
+    display: none;
+  }
+  details summary::after {
+    content: "▼";
+    float: right;
+    transition: transform 0.2s;
+  }
+  details[open] summary::after {
+    transform: rotate(180deg);
+  }
+</style>

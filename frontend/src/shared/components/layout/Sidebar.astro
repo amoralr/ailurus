@@ -1,5 +1,6 @@
 ---
-import { MOCK_CATEGORIES, MOCK_DOCUMENTS } from "@/mocks";
+import { MOCK_FOLDERS } from "@/mocks/folders.mock";
+import { SidebarItem } from "./SidebarItem";
 
 interface Props {
   currentSlug?: string;
@@ -16,36 +17,20 @@ const { currentSlug } = Astro.props;
     </a>
   </div>
 
-  <nav class="sidebar-nav">
+  <nav
+    class="sidebar-nav"
+    role="navigation"
+    aria-label="Documentation navigation"
+  >
     {
-      MOCK_CATEGORIES.map((category) => {
-        const docs = MOCK_DOCUMENTS.filter((d) => d.category === category.name);
-
-        return (
-          <details open class="category">
-            <summary class="category-header">
-              <span class="category-icon">{category.icon}</span>
-              <span class="category-name">{category.name}</span>
-              <span class="category-count">{category.count}</span>
-            </summary>
-            <ul class="doc-list">
-              {docs.map((doc) => (
-                <li>
-                  <a
-                    href={`/docs/${doc.slug}`}
-                    class:list={[
-                      "doc-link",
-                      { active: doc.slug === currentSlug },
-                    ]}
-                  >
-                    {doc.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </details>
-        );
-      })
+      MOCK_FOLDERS.map((rootNode) => (
+        <SidebarItem
+          node={rootNode}
+          depth={0}
+          currentSlug={currentSlug}
+          client:load
+        />
+      ))
     }
   </nav>
 </aside>
@@ -94,13 +79,12 @@ const { currentSlug } = Astro.props;
 
   overlay.addEventListener("click", closeSidebar);
 
-  // Close on navigation
-  document.querySelectorAll(".doc-link").forEach((link) => {
-    link.addEventListener("click", () => {
-      if (window.innerWidth < 1024) {
-        closeSidebar();
-      }
-    });
+  // Close on navigation (delegate to catch dynamically added links)
+  sidebar?.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === "A" && window.innerWidth < 1024) {
+      closeSidebar();
+    }
   });
 </script>
 
@@ -111,15 +95,15 @@ const { currentSlug } = Astro.props;
     position: sticky;
     top: 0;
     overflow-y: auto;
-    background: var(--color-bg-primary);
-    border-right: 1px solid var(--color-border);
+    background: hsl(var(--background));
+    border-right: 1px solid hsl(var(--border));
     display: flex;
     flex-direction: column;
   }
 
   .sidebar-header {
     padding: 1.5rem 1rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid hsl(var(--border));
   }
 
   .sidebar-logo {
@@ -127,7 +111,7 @@ const { currentSlug } = Astro.props;
     align-items: center;
     gap: 0.75rem;
     text-decoration: none;
-    color: var(--color-text-primary);
+    color: hsl(var(--foreground));
     font-weight: 600;
     font-size: 1.25rem;
   }
@@ -137,80 +121,22 @@ const { currentSlug } = Astro.props;
   }
 
   .logo-text {
-    background: linear-gradient(135deg, #e74c3c, #ff9800);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--accent))
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .sidebar-nav {
-    padding: 1rem 0;
+    padding: 0.5rem;
     flex: 1;
-  }
-
-  .category {
-    margin-bottom: 0.5rem;
-  }
-
-  .category-header {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    user-select: none;
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: var(--color-text-primary);
-    transition: background 0.2s;
-  }
-
-  .category-header:hover {
-    background: var(--color-bg-secondary);
-  }
-
-  .category-icon {
-    font-size: 1.125rem;
-  }
-
-  .category-name {
-    flex: 1;
-  }
-
-  .category-count {
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
-    background: var(--color-bg-secondary);
-    padding: 0.125rem 0.5rem;
-    border-radius: 9999px;
-  }
-
-  .doc-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .doc-link {
-    display: block;
-    padding: 0.5rem 1rem 0.5rem 2.5rem;
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-    border-left: 2px solid transparent;
-  }
-
-  .doc-link:hover {
-    background: var(--color-bg-secondary);
-    color: var(--color-text-primary);
-  }
-
-  .doc-link.active {
-    color: #ff9800;
-    background: rgba(255, 152, 0, 0.1);
-    border-left-color: #ff9800;
-    font-weight: 500;
+    flex-direction: column;
+    gap: 0.25rem;
   }
 
   /* Sidebar toggle (mobile) */
@@ -223,7 +149,7 @@ const { currentSlug } = Astro.props;
     width: 3.5rem;
     height: 3.5rem;
     border-radius: 50%;
-    background: #ff9800;
+    background: hsl(var(--primary));
     color: white;
     border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -279,7 +205,7 @@ const { currentSlug } = Astro.props;
   /* Custom scrollbar */
   .sidebar {
     scrollbar-width: thin;
-    scrollbar-color: var(--color-border) transparent;
+    scrollbar-color: hsl(var(--border)) transparent;
   }
 
   .sidebar::-webkit-scrollbar {
@@ -291,11 +217,11 @@ const { currentSlug } = Astro.props;
   }
 
   .sidebar::-webkit-scrollbar-thumb {
-    background: var(--color-border);
+    background: hsl(var(--border));
     border-radius: 3px;
   }
 
   .sidebar::-webkit-scrollbar-thumb:hover {
-    background: var(--color-text-secondary);
+    background: hsl(var(--muted-foreground));
   }
 </style>

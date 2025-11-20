@@ -1,0 +1,282 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+const lastUpdated = "17 de noviembre, 2025";
+---
+
+<Layout title="Frontend Architecture - Ailurus">
+  <main class="container max-w-5xl py-12 md:py-16">
+    <!-- Breadcrumb -->
+    <nav class="mb-6 text-sm text-muted-foreground">
+      <a
+        href="/architecture"
+        class="hover:text-ailurus-orange transition-colors">🏗️ Architecture</a
+      >
+      <span class="mx-2">/</span>
+      <span class="text-foreground">⚡ Frontend</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-3">
+        <h1 class="text-4xl font-bold">⚡ Frontend Architecture</h1>
+      </div>
+      <p class="text-muted-foreground text-lg">
+        Detalles de la arquitectura del frontend con Astro
+      </p>
+      <p class="text-sm text-muted-foreground mt-2">
+        Última actualización: {lastUpdated}
+      </p>
+    </div>
+
+    <Separator className="my-8" />
+
+    <!-- Overview -->
+    <section class="mb-12">
+      <p class="text-muted-foreground leading-relaxed text-lg mb-6">
+        El frontend de Ailurus está construido con <strong>Astro</strong> usando
+        Islands Architecture.
+      </p>
+
+      <Card className="border-blue-500/20 bg-blue-500/5">
+        <CardHeader>
+          <CardTitle>🏝️ Islands Architecture</CardTitle>
+        </CardHeader>
+        <CardContent className="text-muted-foreground">
+          <p class="mb-4">
+            Solo los componentes que necesitan interactividad usan React:
+          </p>
+          <div
+            class="bg-muted/50 rounded-lg p-4 font-mono text-sm overflow-x-auto"
+          >
+            <pre><code>{`---
+import { SearchBar } from './SearchBar';
+---
+
+<!-- Componente estático -->
+<header>
+  <h1>Documentación</h1>
+  
+  <!-- Island interactivo -->
+  <SearchBar client:load />
+</header>`}</code></pre>
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Feature-Based Structure -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">📁 Feature-Based Structure</h2>
+      <p class="text-muted-foreground mb-6">
+        Organización por features/dominios:
+      </p>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`src/
+├── documents/        # Feature: Docs
+│   ├── components/
+│   ├── pages/
+│   ├── services/
+│   └── types/
+├── editor/          # Feature: Editor
+├── search/          # Feature: Search
+└── shared/          # Código compartido`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Routing -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🛣️ Routing</h2>
+      <p class="text-muted-foreground mb-6">
+        Astro maneja el routing basado en archivos:
+      </p>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`pages/
+├── index.astro           → /
+└── docs/
+    ├── index.astro       → /docs
+    └── [...slug].astro   → /docs/:slug`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- State Management -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🔄 State Management</h2>
+      <p class="text-muted-foreground mb-6">
+        Usamos <strong>Nanostores</strong> para estado global:
+      </p>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`// stores/theme.store.ts
+import { atom } from 'nanostores';
+
+export const themeStore = atom<'light' | 'dark'>('light');
+
+export function toggleTheme() {
+  const current = themeStore.get();
+  themeStore.set(current === 'light' ? 'dark' : 'light');
+}`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- API Communication -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🔌 API Communication</h2>
+      <p class="text-muted-foreground mb-6">Centralized API service:</p>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`// services/api.service.ts
+class ApiService {
+  private client = axios.create({
+    baseURL: import.meta.env.PUBLIC_API_URL,
+  });
+
+  async get<T>(url: string) {
+    return this.client.get<T>(url);
+  }
+}
+
+export const apiService = new ApiService();`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Optimizations -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">⚡ Optimizaciones</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">SSR First</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>• HTML completo en primera carga</p>
+            <p>• SEO perfecto</p>
+            <p>• Time to First Byte bajo</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Code Splitting</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>• Chunks automáticos por ruta</p>
+            <p>• Lazy loading de componentes React</p>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-xl">Image Optimization</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="bg-muted/30 rounded p-4 font-mono text-sm overflow-x-auto"
+            >
+              <pre><code>{`<Image
+  src={url}
+  alt="Description"
+  width={800}
+  height={600}
+  format="webp"
+  loading="lazy"
+/>`}</code></pre>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Related Links -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">📚 Documentación Relacionada</h2>
+
+      <div class="grid md:grid-cols-3 gap-4">
+        <a href="/architecture" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Architecture Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Visión general de la arquitectura
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/architecture/backend" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Backend Architecture
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Estructura y patrones del backend
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/architecture/database" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Database Schema
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Esquema de base de datos
+            </CardContent>
+          </Card>
+        </a>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Back to Docs -->
+    <section class="text-center py-8">
+      <a
+        href="/docs"
+        class="inline-flex items-center gap-2 px-6 py-3 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-lg transition-colors"
+      >
+        ← Volver a Documentación
+      </a>
+    </section>
+  </main>
+</Layout>

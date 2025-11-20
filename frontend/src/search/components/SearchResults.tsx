@@ -2,6 +2,7 @@ import { useStore } from "@nanostores/react";
 import { searchStore } from "../stores/search.store";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Search } from "lucide-react";
+import { SearchResultsSkeleton } from "@/components/ui/skeleton";
 
 export function SearchResults() {
   const state = useStore(searchStore);
@@ -17,14 +18,9 @@ export function SearchResults() {
     );
   }
 
-  // Loading state
+  // Loading state with skeleton
   if (state.isSearching) {
-    return (
-      <div className="search-results-loading">
-        <div className="spinner-large"></div>
-        <p>Buscando...</p>
-      </div>
-    );
+    return <SearchResultsSkeleton />;
   }
 
   // Sin resultados

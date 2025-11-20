@@ -1,0 +1,285 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+const lastUpdated = "14 de noviembre, 2025";
+---
+
+<Layout title="Database Schema - Ailurus">
+  <main class="container max-w-5xl py-12 md:py-16">
+    <!-- Breadcrumb -->
+    <nav class="mb-6 text-sm text-muted-foreground">
+      <a
+        href="/architecture"
+        class="hover:text-ailurus-orange transition-colors">🏗️ Architecture</a
+      >
+      <span class="mx-2">/</span>
+      <span class="text-foreground">💾 Database</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-3">
+        <h1 class="text-4xl font-bold">💾 Database Schema</h1>
+      </div>
+      <p class="text-muted-foreground text-lg">
+        Esquema completo de la base de datos SQLite
+      </p>
+      <p class="text-sm text-muted-foreground mt-2">
+        Última actualización: {lastUpdated}
+      </p>
+    </div>
+
+    <Separator className="my-8" />
+
+    <!-- Overview -->
+    <section class="mb-12">
+      <p class="text-muted-foreground leading-relaxed text-lg mb-6">
+        Ailurus usa <strong>SQLite</strong> con extensión <strong>FTS5</strong> para
+        búsqueda full-text.
+      </p>
+    </section>
+
+    <!-- Documents Table -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">📄 Tabla: documents</h2>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`CREATE TABLE documents (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  status TEXT CHECK(status IN ('draft', 'published', 'archived')) DEFAULT 'draft',
+  category TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_by TEXT
+);`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- FTS5 Table -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🔍 Tabla FTS5: documents_fts</h2>
+      <p class="text-muted-foreground mb-6">Para búsqueda full-text:</p>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`CREATE VIRTUAL TABLE documents_fts USING fts5(
+  title,
+  content,
+  content=documents,
+  content_rowid=id
+);`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Future Tables -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🚀 Tablas Futuras</h2>
+
+      <div class="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">document_versions (v0.5)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="bg-muted/30 rounded p-4 font-mono text-sm overflow-x-auto"
+            >
+              <pre><code>{`CREATE TABLE document_versions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  document_id INTEGER NOT NULL,
+  version_number INTEGER NOT NULL,
+  content TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_by TEXT,
+  FOREIGN KEY (document_id) REFERENCES documents(id)
+);`}</code></pre>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">analytics_events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="bg-muted/30 rounded p-4 font-mono text-sm overflow-x-auto"
+            >
+              <pre><code>{`CREATE TABLE analytics_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  event_type TEXT NOT NULL,
+  event_data TEXT, -- JSON
+  user_id TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);`}</code></pre>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">search_logs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="bg-muted/30 rounded p-4 font-mono text-sm overflow-x-auto"
+            >
+              <pre><code>{`CREATE TABLE search_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  query TEXT NOT NULL,
+  results_count INTEGER DEFAULT 0,
+  user_id TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);`}</code></pre>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Indexes -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">📊 Índices</h2>
+
+      <div class="bg-muted/30 border rounded-lg p-6 overflow-x-auto">
+        <pre
+          class="font-mono text-sm"><code>{`CREATE INDEX idx_documents_slug ON documents(slug);
+CREATE INDEX idx_documents_status ON documents(status);
+CREATE INDEX idx_documents_category ON documents(category);
+CREATE INDEX idx_analytics_event_type ON analytics_events(event_type);`}</code></pre>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Common Queries -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">🔎 Queries Comunes</h2>
+
+      <div class="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Búsqueda Full-Text</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="bg-muted/30 rounded p-4 font-mono text-sm overflow-x-auto"
+            >
+              <pre><code>{`SELECT 
+  d.id,
+  d.slug,
+  d.title,
+  snippet(documents_fts, 1, '<mark>', '</mark>', '...', 32) as excerpt,
+  rank
+FROM documents_fts
+JOIN documents d ON documents_fts.rowid = d.id
+WHERE documents_fts MATCH ?
+ORDER BY rank
+LIMIT 20;`}</code></pre>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Documentos por Categoría</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              class="bg-muted/30 rounded p-4 font-mono text-sm overflow-x-auto"
+            >
+              <pre><code>{`SELECT * FROM documents
+WHERE category = ?
+  AND status = 'published'
+ORDER BY updated_at DESC;`}</code></pre>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Related Links -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">📚 Documentación Relacionada</h2>
+
+      <div class="grid md:grid-cols-3 gap-4">
+        <a href="/architecture" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Architecture Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Visión general de la arquitectura
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/architecture/backend" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                Backend Architecture
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Estructura del backend NestJS
+            </CardContent>
+          </Card>
+        </a>
+
+        <a href="/docs/api-overview" class="group">
+          <Card
+            className="h-full hover:shadow-lg hover:border-ailurus-orange/50 transition-all"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-lg group-hover:text-ailurus-orange transition-colors"
+              >
+                API Reference
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Documentación de endpoints
+            </CardContent>
+          </Card>
+        </a>
+      </div>
+    </section>
+
+    <Separator className="my-12" />
+
+    <!-- Back to Docs -->
+    <section class="text-center py-8">
+      <a
+        href="/docs"
+        class="inline-flex items-center gap-2 px-6 py-3 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-lg transition-colors"
+      >
+        ← Volver a Documentación
+      </a>
+    </section>
+  </main>
+</Layout>

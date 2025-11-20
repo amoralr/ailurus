@@ -1,0 +1,156 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Separator } from "@/components/ui/separator";
+
+const lastUpdated = "19 de noviembre, 2025";
+---
+
+<Layout title="Privacy Policy - Ailurus">
+  <main class="container max-w-4xl py-12 md:py-16">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold mb-2">Privacy Policy</h1>
+      <p class="text-muted-foreground">
+        Última actualización: {lastUpdated}
+      </p>
+    </div>
+
+    <Separator className="my-8" />
+
+    <!-- Content -->
+    <div class="prose prose-slate dark:prose-invert max-w-none">
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Resumen</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Ailurus es un framework de documentación diseñado para ser
+          <strong>auto-hosted</strong> (alojado por ti mismo). Esto significa que
+          <strong>no recolectamos ningún dato personal</strong> desde nuestros servidores
+          porque no operamos servidores centralizados.
+        </p>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">
+          ¿Qué datos recolecta Ailurus?
+        </h2>
+        <p class="text-muted-foreground leading-relaxed mb-4">
+          <strong>Ninguno.</strong> Al ser una solución auto-hosted:
+        </p>
+        <ul class="space-y-2 text-muted-foreground">
+          <li>
+            ✅ Todos tus datos permanecen en <strong>tu servidor</strong> o infraestructura
+          </li>
+          <li>
+            ✅ No usamos cookies de terceros ni herramientas de tracking
+            externas
+          </li>
+          <li>
+            ✅ No hay analytics ni telemetría enviada a servidores externos
+          </li>
+          <li>
+            ✅ La base de datos SQLite se almacena localmente en tu instalación
+          </li>
+          <li>
+            ✅ Tú tienes control total sobre quién accede a tus documentos
+          </li>
+        </ul>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Almacenamiento Local</h2>
+        <p class="text-muted-foreground leading-relaxed mb-4">
+          Ailurus puede usar <strong>localStorage</strong> del navegador para:
+        </p>
+        <ul class="space-y-2 text-muted-foreground">
+          <li>Guardar preferencias de tema (dark/light mode)</li>
+          <li>Almacenar borradores de documentos no guardados</li>
+          <li>Mantener el estado de la interfaz (sidebar expandido, etc.)</li>
+        </ul>
+        <p class="text-muted-foreground leading-relaxed mt-4">
+          Esta información <strong>nunca sale de tu navegador</strong> y puedes borrarla
+          en cualquier momento limpiando el localStorage.
+        </p>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Autenticación (Futuro)</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          En versiones futuras, Ailurus podrá incluir un sistema de
+          autenticación opcional. Si decides implementarlo, los datos de
+          usuarios (emails, contraseñas hasheadas) se almacenarán en
+          <strong>tu base de datos local</strong>, no en servidores externos.
+        </p>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Servicios de Terceros</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Ailurus no depende de servicios de terceros en su configuración base.
+          Si decides integrar herramientas externas (analytics, CDN, etc.), eres
+          responsable de:
+        </p>
+        <ul class="space-y-2 text-muted-foreground mt-4">
+          <li>Revisar las políticas de privacidad de esos servicios</li>
+          <li>
+            Informar a tus usuarios sobre cualquier dato que se comparta con
+            terceros
+          </li>
+          <li>Cumplir con regulaciones aplicables (GDPR, CCPA, etc.)</li>
+        </ul>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Tus Responsabilidades</h2>
+        <p class="text-muted-foreground leading-relaxed mb-4">
+          Como administrador de tu instancia de Ailurus, eres responsable de:
+        </p>
+        <ul class="space-y-2 text-muted-foreground">
+          <li>Proteger el acceso a tu servidor y base de datos</li>
+          <li>
+            Implementar medidas de seguridad adecuadas (HTTPS, firewall, etc.)
+          </li>
+          <li>Hacer backups regulares de tus datos</li>
+          <li>
+            Cumplir con las leyes de privacidad aplicables en tu jurisdicción
+          </li>
+        </ul>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Cambios en esta Política</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Esta política puede actualizarse ocasionalmente. Los cambios se
+          reflejarán en este documento con una nueva fecha de "última
+          actualización" al inicio.
+        </p>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Contacto</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Si tienes preguntas sobre esta política de privacidad, puedes abrir un
+          issue en{" "}
+          <a
+            href="https://github.com/amoralr/ailurus"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-ailurus-red hover:underline"
+          >
+            GitHub
+          </a>.
+        </p>
+      </section>
+
+      <Separator className="my-8" />
+
+      <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r-lg mt-8">
+        <p class="text-sm text-muted-foreground">
+          <strong>Nota importante:</strong> Este documento no constituye asesoría
+          legal. Si planeas usar Ailurus en un contexto empresarial o con requisitos
+          legales específicos, consulta con un abogado especializado en privacidad
+          de datos.
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>

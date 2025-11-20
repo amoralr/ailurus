@@ -97,7 +97,7 @@ import { ThemeToggle } from "./ThemeToggle";
   </div>
 
   <!-- Mobile Menu -->
-  <div id="mobile-menu" class="hidden md:hidden border-t">
+  <div id="mobile-menu" class="hidden border-t md:!hidden">
     <nav class="container py-4 flex flex-col space-y-3">
       <a
         href="/docs"
@@ -138,5 +138,13 @@ import { ThemeToggle } from "./ThemeToggle";
 
   button?.addEventListener("click", () => {
     menu?.classList.toggle("hidden");
+
+    // Cerrar menú al hacer click en un enlace
+    const links = menu?.querySelectorAll("a");
+    links?.forEach((link) => {
+      link.addEventListener("click", () => {
+        menu?.classList.add("hidden");
+      });
+    });
   });
 </script>
