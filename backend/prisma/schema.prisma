@@ -1,0 +1,181 @@
+// Prisma Schema - Ailurus Documentation Platform
+// Generated: 2025-11-20
+// Normalized to 3NF following alignment report findings
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum DocumentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum FolderType {
+  FOLDER
+  FILE
+}
+
+// ============================================================================
+// MAIN ENTITIES
+// ============================================================================
+
+/// Documents are the core content entities with hierarchical categorization
+/// Follows 3NF: All non-key attributes depend only on primary key
+model Document {
+  id      Int     @id @default(autoincrement())
+  slug    String  @unique @db.VarChar(255)
+  title   String  @db.VarChar(500)
+  content String  @db.Text // Markdown content
+  excerpt String? @db.VarChar(500) // Short summary for cards/previews
+
+  // Hierarchical Organization (normalized)
+  categoryId  String // FK to Category
+  subcategory String? @db.VarChar(100) // Optional sub-categorization
+  path        String  @db.VarChar(1000) // Full Obsidian-style path: "Equipo/Proyecto/Category/Title"
+
+  // Metadata
+  status    DocumentStatus @default(DRAFT)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  createdBy String         @default("anonymous") @db.VarChar(100)
+
+  // Relations
+  category Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  folders  FolderDocument[] // Many-to-many with Folders
+
+  // Indexes for query performance
+  @@index([categoryId], name: "idx_document_category")
+  @@index([status], name: "idx_document_status")
+  @@index([path], name: "idx_document_path")
+  @@index([createdAt], name: "idx_document_created")
+  @@map("documents")
+}
+
+/// Categories define the top-level organization of documents
+/// Immutable reference data - follows 3NF
+model Category {
+  id    String @id @db.VarChar(50) // 'getting-started', 'architecture', etc.
+  name  String @db.VarChar(100) // Display name
+  icon  String @db.VarChar(10) // Emoji icon
+  order Int    @default(0) // Sort order in UI
+
+  // Relations
+  documents Document[]
+  folders   FolderCategory[] // Many-to-many with Folders
+
+  @@index([order], name: "idx_category_order")
+  @@map("categories")
+}
+
+/// Folders represent the hierarchical Obsidian-style navigation tree
+/// Self-referential for nested structure - follows 3NF
+model Folder {
+  id    Int        @id @default(autoincrement())
+  name  String     @db.VarChar(255)
+  type  FolderType
+  icon  String?    @db.VarChar(10) // Optional emoji icon
+  path  String     @unique @db.VarChar(1000) // Full path: "Equipo/Proyecto/Getting Started"
+  order Int        @default(0) // Sort order within parent
+
+  // Self-referential hierarchy
+  parentId Int?
+  parent   Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Folder[] @relation("FolderHierarchy")
+
+  // Relations
+  documents  FolderDocument[] // Many-to-many with Documents
+  categories FolderCategory[] // Many-to-many with Categories
+
+  @@index([parentId], name: "idx_folder_parent")
+  @@index([path], name: "idx_folder_path")
+  @@index([type], name: "idx_folder_type")
+  @@index([order], name: "idx_folder_order")
+  @@map("folders")
+}
+
+// ============================================================================
+// JOIN TABLES (Many-to-Many Relationships)
+// ============================================================================
+
+/// Junction table for Document-Folder many-to-many relationship
+/// Allows documents to appear in multiple folders (e.g., shortcuts, links)
+model FolderDocument {
+  folderId   Int
+  documentId Int
+  order      Int      @default(0) // Order within folder
+  createdAt  DateTime @default(now())
+
+  folder   Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@id([folderId, documentId])
+  @@index([folderId], name: "idx_folder_document_folder")
+  @@index([documentId], name: "idx_folder_document_document")
+  @@map("folder_documents")
+}
+
+/// Junction table for Folder-Category many-to-many relationship
+/// Allows folders to belong to multiple categories for cross-referencing
+model FolderCategory {
+  folderId   Int
+  categoryId String
+  createdAt  DateTime @default(now())
+
+  folder   Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([folderId, categoryId])
+  @@index([folderId], name: "idx_folder_category_folder")
+  @@index([categoryId], name: "idx_folder_category_category")
+  @@map("folder_categories")
+}
+
+// ============================================================================
+// AUDIT & METADATA
+// ============================================================================
+
+/// Activity log for tracking document changes and user actions
+/// Optional extension for audit trail
+model ActivityLog {
+  id         Int      @id @default(autoincrement())
+  entityType String   @db.VarChar(50) // 'document', 'folder', 'category'
+  entityId   Int
+  action     String   @db.VarChar(50) // 'create', 'update', 'delete', 'publish'
+  userId     String   @db.VarChar(100)
+  changes    String?  @db.Text // JSON string of changes
+  ipAddress  String?  @db.VarChar(45) // IPv4 or IPv6
+  userAgent  String?  @db.VarChar(500)
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId], name: "idx_activity_entity")
+  @@index([userId], name: "idx_activity_user")
+  @@index([createdAt], name: "idx_activity_created")
+  @@map("activity_logs")
+}
+
+// ============================================================================
+// VIEWS & STATISTICS (Optional - for query optimization)
+// ============================================================================
+
+/// Materialized view for document statistics per category
+/// Can be implemented as a regular table with triggers or scheduled updates
+model CategoryStats {
+  categoryId     String   @id @db.VarChar(50)
+  totalDocuments Int      @default(0)
+  publishedDocs  Int      @default(0)
+  draftDocs      Int      @default(0)
+  archivedDocs   Int      @default(0)
+  lastUpdated    DateTime @updatedAt
+
+  @@map("category_stats")
+}
