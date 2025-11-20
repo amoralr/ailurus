@@ -1,6 +1,10 @@
 import { PrismaClient, DocumentStatus, FolderType } from '@prisma/client';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaBetterSqlite3({
+  url: process.env.DATABASE_URL || 'file:./dev.db',
+});
+const prisma = new PrismaClient({ adapter });
 
 // Categories from mocks
 const CATEGORIES = [
@@ -345,19 +349,21 @@ async function main() {
   // Link Folders to Documents (FolderDocument junction table)
   console.log('🔗 Linking folders to documents...');
   const folderDocumentLinks = FOLDER_STRUCTURE.filter(
-    (f) => f.type === FolderType.FILE && f.documentSlug
-  ).map((f) => {
-    const doc = MOCK_DOCUMENTS.find((d) => d.slug === f.documentSlug);
-    if (!doc) {
-      console.warn(`⚠️  Document not found for slug: ${f.documentSlug}`);
-      return null;
-    }
-    return {
-      folderId: f.id,
-      documentId: doc.id,
-      order: f.order,
-    };
-  }).filter(Boolean);
+    (f) => f.type === FolderType.FILE && f.documentSlug,
+  )
+    .map((f) => {
+      const doc = MOCK_DOCUMENTS.find((d) => d.slug === f.documentSlug);
+      if (!doc) {
+        console.warn(`⚠️  Document not found for slug: ${f.documentSlug}`);
+        return null;
+      }
+      return {
+        folderId: f.id,
+        documentId: doc.id,
+        order: f.order,
+      };
+    })
+    .filter(Boolean);
 
   for (const link of folderDocumentLinks) {
     if (link) {

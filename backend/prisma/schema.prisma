@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 // ============================================================================
@@ -33,21 +33,21 @@ enum FolderType {
 /// Follows 3NF: All non-key attributes depend only on primary key
 model Document {
   id      Int     @id @default(autoincrement())
-  slug    String  @unique @db.VarChar(255)
-  title   String  @db.VarChar(500)
-  content String  @db.Text // Markdown content
-  excerpt String? @db.VarChar(500) // Short summary for cards/previews
+  slug    String  @unique
+  title   String
+  content String // Markdown content
+  excerpt String? // Short summary for cards/previews
 
   // Hierarchical Organization (normalized)
   categoryId  String // FK to Category
-  subcategory String? @db.VarChar(100) // Optional sub-categorization
-  path        String  @db.VarChar(1000) // Full Obsidian-style path: "Equipo/Proyecto/Category/Title"
+  subcategory String? // Optional sub-categorization
+  path        String // Full Obsidian-style path: "Equipo/Proyecto/Category/Title"
 
   // Metadata
   status    DocumentStatus @default(DRAFT)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
-  createdBy String         @default("anonymous") @db.VarChar(100)
+  createdBy String         @default("anonymous")
 
   // Relations
   category Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
@@ -64,9 +64,9 @@ model Document {
 /// Categories define the top-level organization of documents
 /// Immutable reference data - follows 3NF
 model Category {
-  id    String @id @db.VarChar(50) // 'getting-started', 'architecture', etc.
-  name  String @db.VarChar(100) // Display name
-  icon  String @db.VarChar(10) // Emoji icon
+  id    String @id // 'getting-started', 'architecture', etc.
+  name  String // Display name
+  icon  String // Emoji icon
   order Int    @default(0) // Sort order in UI
 
   // Relations
@@ -81,10 +81,10 @@ model Category {
 /// Self-referential for nested structure - follows 3NF
 model Folder {
   id    Int        @id @default(autoincrement())
-  name  String     @db.VarChar(255)
+  name  String
   type  FolderType
-  icon  String?    @db.VarChar(10) // Optional emoji icon
-  path  String     @unique @db.VarChar(1000) // Full path: "Equipo/Proyecto/Getting Started"
+  icon  String? // Optional emoji icon
+  path  String     @unique // Full path: "Equipo/Proyecto/Getting Started"
   order Int        @default(0) // Sort order within parent
 
   // Self-referential hierarchy
@@ -148,13 +148,13 @@ model FolderCategory {
 /// Optional extension for audit trail
 model ActivityLog {
   id         Int      @id @default(autoincrement())
-  entityType String   @db.VarChar(50) // 'document', 'folder', 'category'
+  entityType String // 'document', 'folder', 'category'
   entityId   Int
-  action     String   @db.VarChar(50) // 'create', 'update', 'delete', 'publish'
-  userId     String   @db.VarChar(100)
-  changes    String?  @db.Text // JSON string of changes
-  ipAddress  String?  @db.VarChar(45) // IPv4 or IPv6
-  userAgent  String?  @db.VarChar(500)
+  action     String // 'create', 'update', 'delete', 'publish'
+  userId     String
+  changes    String? // JSON string of changes
+  ipAddress  String? // IPv4 or IPv6
+  userAgent  String?
   createdAt  DateTime @default(now())
 
   @@index([entityType, entityId], name: "idx_activity_entity")
@@ -170,7 +170,7 @@ model ActivityLog {
 /// Materialized view for document statistics per category
 /// Can be implemented as a regular table with triggers or scheduled updates
 model CategoryStats {
-  categoryId     String   @id @db.VarChar(50)
+  categoryId     String   @id
   totalDocuments Int      @default(0)
   publishedDocs  Int      @default(0)
   draftDocs      Int      @default(0)
