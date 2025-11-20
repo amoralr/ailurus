@@ -49,6 +49,26 @@ class MarkdownService {
       return `<a href="${href}"${titleAttr}${target}>${text}</a>`;
     };
 
+    // Images with lazy loading and caption support
+    renderer.image = ({ href, title, text }: { href: string; title?: string | null; text: string }) => {
+      const alt = this.escapeHtml(text || 'Image');
+      const titleAttr = title ? ` title="${this.escapeHtml(title)}"` : '';
+      const caption = title || text;
+      
+      return `
+        <figure class="markdown-image-container">
+          <img 
+            src="${href}" 
+            alt="${alt}"${titleAttr}
+            loading="lazy"
+            class="markdown-image"
+            data-zoomable
+          />
+          ${caption ? `<figcaption class="markdown-image-caption">${this.escapeHtml(caption)}</figcaption>` : ''}
+        </figure>
+      `;
+    };
+
     marked.use({ renderer });
     this.initialized = true;
   }

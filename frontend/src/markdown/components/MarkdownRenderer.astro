@@ -1,5 +1,6 @@
 ---
 import { markdownService } from "../services/markdown.service";
+import { ImageLightboxController } from "./ImageLightboxController";
 import "@/markdown/styles/markdown.css";
 
 interface Props {
@@ -14,7 +15,28 @@ const htmlContent = await markdownService.render(content);
 
 <div class="markdown-content" set:html={htmlContent} />
 
+<!-- shadcn Dialog-based Lightbox -->
+<ImageLightboxController client:only="react" />
+
 <script>
+  // Image click handler - communicates with React lightbox
+  document.addEventListener("DOMContentLoaded", () => {
+    document
+      .querySelectorAll(".markdown-image[data-zoomable]")
+      .forEach((img) => {
+        img.addEventListener("click", () => {
+          // Dispatch custom event for React component
+          const event = new CustomEvent("openImageLightbox", {
+            detail: {
+              src: (img as HTMLImageElement).src,
+              alt: (img as HTMLImageElement).alt,
+            },
+          });
+          window.dispatchEvent(event);
+        });
+      });
+  });
+
   // Copy button functionality for code blocks
   document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("pre code[data-code]").forEach((block) => {

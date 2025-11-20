@@ -237,11 +237,53 @@
 }
 
 /* Images */
-.markdown-content img {
+.markdown-content .markdown-image-container {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.markdown-content .markdown-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  cursor: zoom-in;
+  transition: all 0.3s ease;
+}
+
+.markdown-content .markdown-image:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  transform: translateY(-2px);
+}
+
+.markdown-content .markdown-image-caption {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+/* Fallback for legacy images without figure wrapper */
+.markdown-content img:not(.markdown-image) {
   max-width: 100%;
   height: auto;
   border-radius: 0.5rem;
   margin: 1.5rem 0;
+}
+
+/* Lightbox with shadcn Dialog - Custom overlay styling */
+[data-radix-dialog-overlay][data-state="open"] {
+  background: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Image in lightbox - ensure proper sizing */
+[data-radix-dialog-content] img {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  border: none;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 }
 
 /* Strong/Bold */
