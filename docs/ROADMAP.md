@@ -54,17 +54,18 @@
 
 ## 📋 **FILOSOFÍA DE PRIORIZACIÓN**
 
-### **Estado de Implementación Actual**
+### **Estado de Implementación Actual** (20 Nov 2025)
 
-| Componente        | Estado          | Progreso                                 |
-| ----------------- | --------------- | ---------------------------------------- |
-| **Frontend**      | 🟢 Implementado | 85% - Astro + React + shadcn/ui          |
-| **Mocks**         | 🟢 Completo     | 100% - 20 docs + folders + categories    |
-| **Navegación**    | 🟢 Implementado | 95% - SidebarItem recursivo              |
-| **Imágenes**      | 🟢 Implementado | 100% - Lightbox + lazy loading           |
-| **Database**      | 🟡 Pendiente    | 60% - Schema definido, falta migration   |
-| **Backend API**   | 🟡 Pendiente    | 70% - Falta folders/categories endpoints |
-| **Documentación** | 🟢 Actualizado  | 100% - 8 archivos optimizados            |
+| Componente        | Estado          | Progreso                                    |
+| ----------------- | --------------- | ------------------------------------------- |
+| **Frontend**      | 🟢 Implementado | 85% - Astro + React + shadcn/ui             |
+| **Mocks**         | 🟢 Completo     | 100% - 20 docs + folders + categories       |
+| **Navegación**    | 🟢 Implementado | 95% - SidebarItem recursivo                 |
+| **Imágenes**      | 🟢 Implementado | 100% - Lightbox + lazy loading              |
+| **Database**      | 🟢 Completado   | 100% - 3 migrations, seed poblado, FTS5     |
+| **Backend API**   | 🟢 Completado   | 100% - 21 endpoints REST (4 módulos)        |
+| **Documentación** | 🟢 Actualizado  | 100% - 8 archivos optimizados               |
+| **Migración**     | 🟡 Pendiente    | 0% - Frontend con mocks, API lista para uso |
 
 ### **Criterios de Prioridad**
 
@@ -114,7 +115,7 @@ graph TD
 
 ---
 
-### **P0.2: Setup Prisma + Base de Datos**
+### **P0.2: Setup Prisma + Base de Datos** ✅ **COMPLETADO**
 
 **Objetivo**: Database operacional con schema y migraciones
 
@@ -123,15 +124,15 @@ graph TD
 - [x] Inicializar Prisma con SQLite ✅
 - [x] Crear schema de `Document` con 3NF ✅
 - [x] Crear tablas: Category, Folder, FolderDocument, FolderCategory ✅
-- [ ] Crear migración inicial
-- [ ] Configurar `PrismaService` global
-- [x] Crear seed con 20 documentos reales ✅ (en mocks)
-- [ ] Verificar con Prisma Studio
+- [x] Crear migración inicial ✅
+- [x] Configurar `PrismaService` global ✅
+- [x] Crear seed con 5 documentos reales ✅
+- [x] Verificar con Prisma Studio ✅
 
 **Dependencias**: P0.1  
 **Bloqueante para**: Todos los features de backend  
 **Estimación**: 3-4 horas  
-**Estado Actual**: 🟡 70% - Schema definido, falta ejecutar migration
+**Estado Actual**: 🟢 100% - Database operacional con 3 migrations, PrismaBetterSqlite3 adapter, seed poblado
 
 ---
 
@@ -315,20 +316,22 @@ graph TD
 
 ---
 
-### **P1.6: Búsqueda Full-Text**
+### **P1.6: Búsqueda Full-Text** ✅ **BACKEND COMPLETADO** / ⏳ **FRONTEND PENDIENTE**
 
 **Objetivo**: Buscar documentos con SQLite FTS5
 
-**Backend**:
+**Backend**: ✅ **COMPLETADO**
 
-- [ ] Crear migración FTS5
-- [ ] Crear triggers de sincronización
-- [ ] `FTS5Repository` con raw SQL
-- [ ] `SearchService.search()`
-- [ ] `GET /search` controller
-- [ ] Logging de búsquedas en `SearchLog`
+- [x] Crear migración FTS5 ✅
+- [x] Crear triggers de sincronización ✅ (4 triggers: insert, update, delete, hard-delete)
+- [x] SearchService con $queryRaw ✅
+- [x] `GET /search` controller ✅
+- [x] Logging de búsquedas en `ActivityLog` ✅
+- [x] FTS5 con unicode61 tokenizer + diacritics removal ✅
+- [x] Pagination con limit y offset ✅
+- [x] BigInt serialization fix ✅
 
-**Frontend**:
+**Frontend**: ⏳ **PENDIENTE**
 
 - [ ] `search.service.ts`
 - [ ] `SearchBar.tsx` component
@@ -339,7 +342,8 @@ graph TD
 
 **Dependencias**: P0.2, P1.1  
 **Valor de Negocio**: ⭐⭐⭐⭐⭐ (core feature)  
-**Estimación**: 6-8 horas
+**Estimación**: 6-8 horas (3.5h backend ✅, 3-4h frontend restante)  
+**Testing**: Búsquedas validadas ("instalacion" → 1 resultado, "equipo" → 1, "arquitectura" → 1)
 
 ---
 
