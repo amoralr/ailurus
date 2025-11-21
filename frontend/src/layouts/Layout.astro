@@ -2,6 +2,7 @@
 import Header from "@/shared/components/layout/Header.astro";
 import Footer from "@/shared/components/layout/Footer.astro";
 import { NewDocFab } from "@/shared/components/layout/NewDocFab";
+import { Toaster } from "@/components/ui/toaster";
 import "@/styles/global.css";
 import "@/shared/components/layout/NewDocFab.css";
 
@@ -198,6 +199,9 @@ const socialImage = new URL(ogImage, Astro.site);
 
       <!-- Floating Action Button para crear documentos -->
       <NewDocFab client:load />
+
+      <!-- Toast Notifications -->
+      <Toaster client:only="react" />
     </div>
   </body>
 </html>

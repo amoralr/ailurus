@@ -5,52 +5,100 @@ import {
   setEditing,
   setHasChanges,
   setAutoSaveEnabled,
+  setSaving,
+  setLastSaved,
 } from "../stores/editor.store";
 import { EditorService } from "../services/editor.service";
 import { markdownService } from "@/markdown/services/markdown.service";
-import { Save, Eye, EyeOff, Upload, X, Download, AlertCircle } from "lucide-react";
+import { Save, Eye, EyeOff, Upload, X, Download, AlertCircle, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
+import { documentsApi } from "@/services/api/documents.service";
 import "@/markdown/styles/markdown.css";
 
 interface MarkdownEditorProps {
   slug: string;
   initialContent: string;
   title: string;
+  isNew?: boolean;
+  path?: string;
+  excerpt?: string;
 }
 
 export function MarkdownEditor({
   slug,
   initialContent,
   title,
+  isNew = false,
+  path = "",
+  excerpt = "",
 }: MarkdownEditorProps) {
   const state = useStore(editorStore);
+  const { toast } = useToast();
   const [content, setContent] = useState(initialContent);
   const [docTitle, setDocTitle] = useState(title);
   const [activeTab, setActiveTab] = useState("split");
   const [renderedContent, setRenderedContent] = useState("");
+  const [documentId, setDocumentId] = useState<number | null>(null);
+  const [isCreating, setIsCreating] = useState(isNew);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Inicializar editor
+  // Inicializar editor y crear draft si es nuevo
   useEffect(() => {
     setEditing(true);
 
-    // Cargar draft si existe
-    const draft = EditorService.getDraft(slug);
-    if (draft && draft !== initialContent) {
-      const loadDraft = confirm(
-        "Hay cambios sin guardar. ¿Quieres cargar el borrador?"
-      );
-      if (loadDraft) {
-        setContent(draft);
+    const initializeEditor = async () => {
+      if (isNew) {
+        // Crear documento como draft en la BD
+        try {
+          setIsCreating(true);
+          const newDoc = await documentsApi.createDocument({
+            title: docTitle,
+            content: content,
+            excerpt: excerpt,
+            categoryId: "getting-started", // TODO: Obtener de form
+            path: path,
+            status: "DRAFT",
+          });
+          setDocumentId(newDoc.id);
+          setIsCreating(false);
+          toast({
+            title: "Borrador creado",
+            description: "El documento se guardó como borrador.",
+          });
+        } catch (error) {
+          console.error("Error creating draft:", error);
+          setIsCreating(false);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "No se pudo crear el borrador.",
+          });
+        }
+      } else {
+        // Obtener ID del documento existente
+        try {
+          const doc = await documentsApi.getDocumentBySlug(slug);
+          setDocumentId(doc.id);
+        } catch (error) {
+          console.error("Error fetching document ID:", error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "No se pudo cargar el documento.",
+          });
+        }
       }
-    }
+    };
 
-    // Limpiar borradores antiguos al cargar
+    initializeEditor();
+
+    // Limpiar borradores antiguos de localStorage
     EditorService.cleanOldDrafts();
 
     return () => {
@@ -59,7 +107,7 @@ export function MarkdownEditor({
         clearTimeout(autoSaveTimerRef.current);
       }
     };
-  }, [slug, initialContent]);
+  }, []);
 
   // Renderizar preview cuando cambia el contenido
   useEffect(() => {
@@ -172,31 +220,91 @@ export function MarkdownEditor({
   };
 
   const handleSave = async () => {
+    if (!documentId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se encontró el ID del documento.",
+      });
+      return;
+    }
+
     try {
-      await EditorService.saveDraft(slug, content);
+      setSaving(true);
+      
+      await documentsApi.updateDraft(documentId, {
+        title: docTitle,
+        content: content,
+        excerpt: excerpt,
+        path: path,
+      });
+
+      setLastSaved(new Date());
+      setHasChanges(false);
+      
+      toast({
+        title: "Guardado",
+        description: "Los cambios se guardaron correctamente.",
+      });
     } catch (error) {
       console.error("Error al guardar:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudieron guardar los cambios.",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
   const handlePublish = async () => {
-    if (!confirm("¿Quieres publicar este documento?")) return;
+    if (!documentId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Debes guardar el documento primero.",
+      });
+      return;
+    }
+
+    // Primero guardar cambios si los hay
+    if (state.hasUnsavedChanges) {
+      await handleSave();
+    }
+
+    const confirmed = window.confirm("¿Quieres publicar este documento?");
+    if (!confirmed) return;
 
     try {
-      await EditorService.publishDocument(slug, content);
-      alert("Documento publicado exitosamente");
-      window.location.href = `/docs/${slug}`;
+      setSaving(true);
+      await documentsApi.publishDocument(documentId);
+      
+      toast({
+        title: "Publicado",
+        description: "El documento se publicó exitosamente.",
+      });
+      
+      // Redirigir después de un breve delay
+      setTimeout(() => {
+        window.location.href = `/docs/${slug}`;
+      }, 1000);
     } catch (error) {
       console.error("Error al publicar:", error);
-      alert("Error al publicar el documento");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo publicar el documento.",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleCancel = () => {
     if (state.hasUnsavedChanges) {
-      if (!confirm("Tienes cambios sin guardar. ¿Salir de todos modos?")) {
-        return;
-      }
+      const confirmed = window.confirm("Tienes cambios sin guardar. ¿Salir de todos modos?");
+      if (!confirmed) return;
     }
     window.history.back();
   };

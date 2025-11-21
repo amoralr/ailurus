@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder.dto';
+import { FolderNodeResponseDto } from './dto/folder-node-response.dto';
+import { FolderType } from '@prisma/client';
 
 export interface FolderNode {
   id: number;
@@ -20,9 +22,29 @@ export class FoldersService {
   constructor(private prisma: PrismaService) {}
 
   /**
+   * Transforma un FolderNode de Prisma al formato del frontend
+   */
+  private transformToResponseDto(folder: any): FolderNodeResponseDto {
+    const isFile = folder.type === FolderType.FILE;
+    const slug = isFile && folder.documents?.[0]?.slug;
+
+    return {
+      id: folder.id.toString(),
+      name: folder.name,
+      type: folder.type.toLowerCase() as 'folder' | 'file',
+      icon: folder.icon,
+      slug: slug || undefined,
+      path: folder.path,
+      order: folder.order,
+      count: folder.children?.length || undefined,
+      children: folder.children?.map((child: any) => this.transformToResponseDto(child)),
+    };
+  }
+
+  /**
    * Construye el árbol jerárquico de folders recursivamente
    */
-  private buildTree(folders: any[], parentId: number | null = null): FolderNode[] {
+  private buildTree(folders: any[], parentId: number | null = null): any[] {
     return folders
       .filter((folder) => folder.parentId === parentId)
       .sort((a, b) => a.order - b.order)
@@ -35,7 +57,7 @@ export class FoldersService {
   /**
    * Obtiene todos los folders en estructura de árbol
    */
-  async findAll(): Promise<FolderNode[]> {
+  async findAll(): Promise<FolderNodeResponseDto[]> {
     const folders = await this.prisma.folder.findMany({
       include: {
         categories: {
@@ -66,13 +88,14 @@ export class FoldersService {
       categories: folder.categories.map((fc) => fc.category),
     }));
 
-    return this.buildTree(foldersWithDocs);
+    const tree = this.buildTree(foldersWithDocs);
+    return tree.map((node) => this.transformToResponseDto(node));
   }
 
   /**
    * Obtiene un folder por su path con sus children
    */
-  async findByPath(path: string): Promise<FolderNode> {
+  async findByPath(path: string): Promise<FolderNodeResponseDto> {
     const folder = await this.prisma.folder.findUnique({
       where: { path },
       include: {
@@ -133,12 +156,14 @@ export class FoldersService {
     // Construir solo el subárbol desde este folder
     const children = this.buildTree(foldersWithDocs, folder.id);
 
-    return {
+    const nodeWithChildren = {
       ...folder,
       documents: folder.documents.map((fd) => fd.document),
       categories: folder.categories.map((fc) => fc.category),
       children,
     };
+
+    return this.transformToResponseDto(nodeWithChildren);
   }
 
   /**

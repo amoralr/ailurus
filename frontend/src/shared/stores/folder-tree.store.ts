@@ -6,19 +6,6 @@ import type { FolderTreeState } from '../types/folder-tree.types';
  * Persists expanded/collapsed state in localStorage
  */
 
-// Load initial state from localStorage
-const loadExpandedFolders = (): Record<string, boolean> => {
-  if (typeof window === 'undefined') return {};
-  
-  try {
-    const stored = localStorage.getItem('ailurus:sidebar:expanded');
-    return stored ? JSON.parse(stored) : {};
-  } catch (error) {
-    console.error('Failed to load sidebar state:', error);
-    return {};
-  }
-};
-
 // Save state to localStorage
 const saveExpandedFolders = (state: Record<string, boolean>) => {
   if (typeof window === 'undefined') return;
@@ -30,9 +17,22 @@ const saveExpandedFolders = (state: Record<string, boolean>) => {
   }
 };
 
+// Load initial state from localStorage (client-side only)
+const loadInitialState = (): Record<string, boolean> => {
+  if (typeof window === 'undefined') return {};
+  
+  try {
+    const stored = localStorage.getItem('ailurus:sidebar:expanded');
+    return stored ? JSON.parse(stored) : {};
+  } catch (error) {
+    console.error('Failed to load sidebar state:', error);
+    return {};
+  }
+};
+
 // Atom for folder tree state
 export const folderTreeStore = atom<FolderTreeState>({
-  expandedFolders: loadExpandedFolders(),
+  expandedFolders: loadInitialState(),
 });
 
 /**

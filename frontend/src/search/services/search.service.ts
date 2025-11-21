@@ -1,17 +1,53 @@
+import { searchApi } from "@/services/api/search.service";
 import { MOCK_DOCUMENTS } from "@/mocks";
 import type { SearchResult } from "../stores/search.store";
 
 export class SearchService {
   /**
-   * Busca documentos que coincidan con la query
+   * Busca documentos usando backend FTS5 o mocks
    * @param query - Término de búsqueda
    * @returns Array de resultados con excerpts destacados
    */
-  static search(query: string): SearchResult[] {
+  static async search(query: string): Promise<SearchResult[]> {
     if (!query || query.trim().length < 2) {
       return [];
     }
 
+    const USE_MOCKS = import.meta.env.PUBLIC_USE_MOCKS === "true";
+    const ENABLE_SEARCH_API =
+      import.meta.env.PUBLIC_ENABLE_SEARCH_API === "true";
+
+    // Si mocks está activado o search API desactivado, usar búsqueda local
+    if (USE_MOCKS || !ENABLE_SEARCH_API) {
+      return this.searchInMocks(query);
+    }
+
+    // Usar backend FTS5
+    try {
+      const response = await searchApi.search({
+        q: query,
+        limit: 20,
+        offset: 0,
+      });
+
+      return response.data.map((result) => ({
+        id: result.id,
+        slug: result.slug,
+        title: result.title,
+        excerpt: result.excerpt,
+        category: result.category,
+        highlights: [], // FTS5 ya retorna excerpts optimizados
+      }));
+    } catch (error) {
+      console.error("[Search] API failed, falling back to mocks:", error);
+      return this.searchInMocks(query);
+    }
+  }
+
+  /**
+   * Búsqueda client-side en mocks (fallback)
+   */
+  private static searchInMocks(query: string): SearchResult[] {
     const lowerQuery = query.toLowerCase().trim();
     const queryWords = lowerQuery.split(/\s+/);
 

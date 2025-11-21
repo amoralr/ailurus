@@ -9,7 +9,8 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { FoldersService, FolderNode } from './folders.service';
+import { FoldersService } from './folders.service';
+import { FolderNodeResponseDto } from './dto/folder-node-response.dto';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder.dto';
 
@@ -21,7 +22,7 @@ export class FoldersController {
    * GET /folders - Retorna el árbol completo de folders
    */
   @Get()
-  findAll(): Promise<FolderNode[]> {
+  findAll(): Promise<FolderNodeResponseDto[]> {
     return this.foldersService.findAll();
   }
 
@@ -29,7 +30,7 @@ export class FoldersController {
    * GET /folders/:path - Retorna un folder específico con sus children
    */
   @Get(':path')
-  findByPath(@Param('path') path: string): Promise<FolderNode> {
+  findByPath(@Param('path') path: string): Promise<FolderNodeResponseDto> {
     return this.foldersService.findByPath(path);
   }
 

@@ -3,18 +3,12 @@ import DocsLayout from "@/layouts/DocsLayout.astro";
 import Sidebar from "@/shared/components/layout/Sidebar.astro";
 import TOC from "@/shared/components/layout/TOC.astro";
 import MarkdownRenderer from "@/markdown/components/MarkdownRenderer.astro";
+import { documentsApi } from "@/services/api/documents.service";
 import { MOCK_DOCUMENTS } from "@/mocks";
 import { markdownService } from "@/markdown/services/markdown.service";
 import { Badge } from "@/components/ui/badge";
 
-export async function getStaticPaths() {
-  return MOCK_DOCUMENTS.filter((doc) => doc.status === "published").map(
-    (doc) => ({
-      params: { slug: doc.slug },
-      props: { doc },
-    })
-  );
-}
+// Dynamic rendering (removed getStaticPaths)
 
 const { slug } = Astro.params;
 
@@ -22,10 +16,42 @@ if (!slug) {
   return Astro.redirect("/404");
 }
 
-// Find document
-const document = MOCK_DOCUMENTS.find(
-  (doc) => doc.slug === slug && doc.status === "published"
-);
+const USE_MOCKS = import.meta.env.PUBLIC_USE_MOCKS === "true";
+
+let document;
+
+if (USE_MOCKS) {
+  // Use mock data
+  document = MOCK_DOCUMENTS.find(
+    (doc) => doc.slug === slug && doc.status === "published"
+  );
+} else {
+  // Fetch from API
+  try {
+    const apiDoc = await documentsApi.getDocumentBySlug(slug);
+    // Convert API response to match mock structure
+    document = {
+      id: apiDoc.id,
+      slug: apiDoc.slug,
+      title: apiDoc.title,
+      content: apiDoc.content,
+      category: apiDoc.categoryId,
+      subcategory: apiDoc.subcategory || undefined,
+      path: apiDoc.path,
+      status: apiDoc.status.toLowerCase() as "published",
+      createdAt: apiDoc.createdAt,
+      updatedAt: apiDoc.updatedAt,
+      createdBy: apiDoc.createdBy,
+      excerpt: apiDoc.excerpt || undefined,
+    };
+  } catch (error) {
+    console.error(`[docs/${slug}] Failed to fetch document from API:`, error);
+    // Fallback to mocks
+    document = MOCK_DOCUMENTS.find(
+      (doc) => doc.slug === slug && doc.status === "published"
+    );
+  }
+}
 
 if (!document) {
   return Astro.redirect("/404");
@@ -71,7 +97,7 @@ const nextDoc =
       <h1 class="document-title">{document.title}</h1>
 
       <div class="document-actions">
-        <a href={`/docs/${slug}/edit`} class="edit-link">
+        <a href={`/docs/edit/${slug}`} class="edit-link">
           <svg
             width="16"
             height="16"

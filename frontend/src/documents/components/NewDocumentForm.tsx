@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileText, Folder, ArrowLeft, ChevronRight } from "lucide-react";
+import { FileText, Folder, ArrowLeft, ChevronRight, Loader2 } from "lucide-react";
+import { foldersApi } from "@/services/api/folders.service";
 import { MOCK_FOLDERS } from "@/mocks/folders.mock";
 import type { FolderNode } from "@/shared/types/folder-tree.types";
 
@@ -21,8 +22,10 @@ export function NewDocumentForm() {
   const [customPath, setCustomPath] = useState("");
   const [useCustomPath, setUseCustomPath] = useState(false);
   const [excerpt, setExcerpt] = useState("");
+  const [existingPaths, setExistingPaths] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Extract all folder paths from MOCK_FOLDERS recursively
+  // Extract all folder paths recursively
   const extractFolderPaths = (nodes: FolderNode[], paths: string[] = []): string[] => {
     for (const node of nodes) {
       if (node.type === 'folder') {
@@ -35,7 +38,30 @@ export function NewDocumentForm() {
     return paths;
   };
 
-  const existingPaths = extractFolderPaths(MOCK_FOLDERS);
+  // Load folders from API or mocks
+  useEffect(() => {
+    const loadFolders = async () => {
+      const USE_MOCKS = import.meta.env.PUBLIC_USE_MOCKS === "true";
+      
+      try {
+        const folders = USE_MOCKS 
+          ? MOCK_FOLDERS 
+          : await foldersApi.getFolderTree();
+        
+        const paths = extractFolderPaths(folders);
+        setExistingPaths(paths);
+      } catch (error) {
+        console.error("[NewDocumentForm] Failed to load folders:", error);
+        // Fallback to mocks
+        const paths = extractFolderPaths(MOCK_FOLDERS);
+        setExistingPaths(paths);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFolders();
+  }, []);
 
   // Generate slug from title
   const handleTitleChange = (value: string) => {
@@ -100,19 +126,25 @@ export function NewDocumentForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-6">
-          <div className="space-y-2">
-            <Label htmlFor="title">Título del Documento *</Label>
-            <Input
-              id="title"
-              type="text"
-              value={title}
-              onChange={(e) => handleTitleChange(e.target.value)}
-              placeholder="Ej: Guía de Instalación"
-              required
-            />
-          </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <span className="ml-3 text-muted-foreground">Cargando carpetas...</span>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Título del Documento *</Label>
+              <Input
+                id="title"
+                type="text"
+                value={title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="Ej: Guía de Instalación"
+                required
+              />
+            </div>
 
           <div className="space-y-2">
             <Label htmlFor="slug">Slug (URL) *</Label>
@@ -243,15 +275,16 @@ export function NewDocumentForm() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline" onClick={() => window.history.back()}>
-            Cancelar
-          </Button>
-          <Button type="submit">
-            Crear y Editar
-          </Button>
-        </div>
-      </form>
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="outline" onClick={() => window.history.back()}>
+              Cancelar
+            </Button>
+            <Button type="submit">
+              Crear y Editar
+            </Button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

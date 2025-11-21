@@ -80,11 +80,47 @@ cd documetation/frontend
 # Install dependencies
 pnpm install
 
+# Copy environment variables
+cp .env.example .env
+
 # Start development server
 pnpm run dev
 ```
 
 The application will be available at `http://localhost:4321`
+
+### Environment Setup
+
+The frontend can run in two modes:
+
+#### Mock Mode (Development)
+
+Uses static data from `src/mocks/`.
+
+```bash
+# In .env
+PUBLIC_USE_MOCKS=true
+pnpm dev
+```
+
+#### API Mode (Production)
+
+Connects to NestJS backend.
+
+```bash
+# In .env
+PUBLIC_USE_MOCKS=false
+pnpm dev
+```
+
+**Environment Variables**:
+
+| Variable                   | Description        | Default                      |
+| -------------------------- | ------------------ | ---------------------------- |
+| `PUBLIC_API_URL`           | Backend API URL    | `http://localhost:3000`      |
+| `PUBLIC_WS_URL`            | WebSocket URL      | `ws://localhost:3000`        |
+| `PUBLIC_USE_MOCKS`         | Use mock data      | `true` (dev), `false` (prod) |
+| `PUBLIC_ENABLE_SEARCH_API` | Use backend search | `false`                      |
 
 ---
 

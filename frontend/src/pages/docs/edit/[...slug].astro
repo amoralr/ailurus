@@ -1,27 +1,88 @@
 ---
 import EditorLayout from "@/layouts/EditorLayout.astro";
 import { MarkdownEditor } from "@/editor/components/MarkdownEditor";
+import { documentsApi } from "@/services/api/documents.service";
 import { MOCK_DOCUMENTS } from "@/mocks/documents.mock";
 
-export function getStaticPaths() {
-  return MOCK_DOCUMENTS.map((doc) => ({
-    params: { slug: doc.slug },
-    props: { doc },
-  }));
+// Dynamic rendering (removed getStaticPaths)
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect("/404");
 }
 
-const { doc } = Astro.props;
+const USE_MOCKS = import.meta.env.PUBLIC_USE_MOCKS === "true";
+
+// Check if this is a new document creation
+const isNew = Astro.url.searchParams.get("new") === "true";
+const queryTitle = Astro.url.searchParams.get("title") || "";
+const queryPath = Astro.url.searchParams.get("path") || "";
+const queryExcerpt = Astro.url.searchParams.get("excerpt") || "";
+
+let doc;
+
+if (isNew) {
+  // Create new document structure for editor
+  doc = {
+    id: 0, // Temporary ID, will be assigned on save
+    slug: slug,
+    title: queryTitle,
+    content: `# ${queryTitle}\n\nEmpieza a escribir tu documento aquí...\n`,
+    category: "getting-started", // Default category
+    subcategory: undefined,
+    path: queryPath,
+    status: "draft",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    createdBy: "Usuario", // TODO: Get from auth
+    excerpt: queryExcerpt || undefined,
+  };
+} else if (USE_MOCKS) {
+  // Use mock data
+  doc = MOCK_DOCUMENTS.find((d) => d.slug === slug);
+} else {
+  // Fetch from API
+  try {
+    const apiDoc = await documentsApi.getDocumentBySlug(slug);
+    // Convert API response to match mock structure
+    doc = {
+      id: apiDoc.id,
+      slug: apiDoc.slug,
+      title: apiDoc.title,
+      content: apiDoc.content,
+      category: apiDoc.categoryId,
+      subcategory: apiDoc.subcategory || undefined,
+      path: apiDoc.path,
+      status: apiDoc.status.toLowerCase(),
+      createdAt: apiDoc.createdAt,
+      updatedAt: apiDoc.updatedAt,
+      createdBy: apiDoc.createdBy,
+      excerpt: apiDoc.excerpt || undefined,
+    };
+  } catch (error) {
+    console.error(
+      `[docs/edit/${slug}] Failed to fetch document from API:`,
+      error
+    );
+    // Fallback to mocks
+    doc = MOCK_DOCUMENTS.find((d) => d.slug === slug);
+  }
+}
 
 if (!doc) {
   return Astro.redirect("/404");
 }
 ---
 
-<EditorLayout title={`Editar: ${doc.title}`}>
+<EditorLayout title={isNew ? `Nuevo: ${doc.title}` : `Editar: ${doc.title}`}>
   <MarkdownEditor
     client:load
     slug={doc.slug}
     initialContent={doc.content}
     title={doc.title}
+    isNew={isNew}
+    path={doc.path}
+    excerpt={doc.excerpt}
   />
 </EditorLayout>

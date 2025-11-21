@@ -1,4 +1,5 @@
 import { useStore } from '@nanostores/react';
+import { useEffect, useState } from 'react';
 import { ChevronRight, Folder, FolderOpen, File } from 'lucide-react';
 import { folderTreeStore, toggleFolder } from '../../stores/folder-tree.store';
 import type { FolderNode } from '../../types/folder-tree.types';
@@ -10,10 +11,17 @@ interface SidebarItemProps {
 }
 
 export function SidebarItem({ node, depth = 0, currentSlug }: SidebarItemProps) {
+  const [isHydrated, setIsHydrated] = useState(false);
   const { expandedFolders } = useStore(folderTreeStore);
-  const isExpanded = expandedFolders[node.path] ?? false;
+  // During SSR and initial render, start collapsed to match server HTML
+  const isExpanded = isHydrated ? (expandedFolders[node.path] ?? false) : false;
   const isActive = node.type === 'file' && node.slug === currentSlug;
   const hasChildren = node.children && node.children.length > 0;
+  
+  // Initialize client-side state after hydration
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const handleClick = (e: React.MouseEvent) => {
     if (node.type === 'folder') {

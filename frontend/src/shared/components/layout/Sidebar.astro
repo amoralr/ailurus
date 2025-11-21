@@ -1,4 +1,5 @@
 ---
+import { foldersApi } from "@/services/api/folders.service";
 import { MOCK_FOLDERS } from "@/mocks/folders.mock";
 import { SidebarItem } from "./SidebarItem";
 
@@ -7,6 +8,24 @@ interface Props {
 }
 
 const { currentSlug } = Astro.props;
+
+const USE_MOCKS = import.meta.env.PUBLIC_USE_MOCKS === "true";
+
+let folders;
+
+if (USE_MOCKS) {
+  // Use mock data
+  folders = MOCK_FOLDERS;
+} else {
+  // Fetch from API
+  try {
+    folders = await foldersApi.getFolderTree();
+  } catch (error) {
+    console.error("[Sidebar] Failed to fetch folders from API:", error);
+    // Fallback to mocks
+    folders = MOCK_FOLDERS;
+  }
+}
 ---
 
 <aside class="sidebar" id="sidebar">
@@ -23,7 +42,7 @@ const { currentSlug } = Astro.props;
     aria-label="Documentation navigation"
   >
     {
-      MOCK_FOLDERS.map((rootNode) => (
+      folders.map((rootNode) => (
         <SidebarItem
           node={rootNode}
           depth={0}

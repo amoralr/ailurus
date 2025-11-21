@@ -59,7 +59,10 @@ const filteredHeadings = headings.filter((h) => h.level === 2 || h.level === 3);
       (entries) => {
         entries.forEach((entry) => {
           const id = entry.target.getAttribute("id");
-          const tocLink = document.querySelector(`.toc-link[href="#${id}"]`);
+          // Find link by comparing href attribute directly (safer than querySelector with IDs)
+          const tocLink = Array.from(tocLinks).find(
+            (link) => link.getAttribute("href") === `#${id}`
+          );
 
           if (entry.isIntersecting) {
             // Remove active from all
@@ -86,7 +89,10 @@ const filteredHeadings = headings.filter((h) => h.level === 2 || h.level === 3);
         const href = link.getAttribute("href");
         if (!href) return;
 
-        const target = document.querySelector(href);
+        // Extract ID from href and use getElementById for safe selection
+        const id = href.substring(1); // Remove the '#'
+        const target = document.getElementById(id);
+
         if (target) {
           const offset = 80; // Header height
           const targetPosition =

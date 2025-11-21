@@ -2,12 +2,41 @@
 import DocsLayout from "@/layouts/DocsLayout.astro";
 import Sidebar from "@/shared/components/layout/Sidebar.astro";
 import DocumentList from "@/documents/components/DocumentList.astro";
+import { documentsApi } from "@/services/api/documents.service";
 import { MOCK_DOCUMENTS } from "@/mocks";
 
-// Filter only published documents
-const publishedDocs = MOCK_DOCUMENTS.filter(
-  (doc) => doc.status === "published"
-);
+const USE_MOCKS = import.meta.env.PUBLIC_USE_MOCKS === "true";
+
+let publishedDocs;
+
+if (USE_MOCKS) {
+  // Use mock data
+  publishedDocs = MOCK_DOCUMENTS.filter((doc) => doc.status === "published");
+} else {
+  // Fetch from API
+  try {
+    const apiDocs = await documentsApi.getDocuments();
+    // Convert API response to match mock structure
+    publishedDocs = apiDocs.map((doc) => ({
+      id: doc.id,
+      slug: doc.slug,
+      title: doc.title,
+      content: doc.content,
+      category: doc.categoryId,
+      subcategory: doc.subcategory || undefined,
+      path: doc.path,
+      status: doc.status.toLowerCase() as "published",
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+      createdBy: doc.createdBy,
+      excerpt: doc.excerpt || undefined,
+    }));
+  } catch (error) {
+    console.error("[docs/index] Failed to fetch documents from API:", error);
+    // Fallback to mocks on error
+    publishedDocs = MOCK_DOCUMENTS.filter((doc) => doc.status === "published");
+  }
+}
 ---
 
 <DocsLayout

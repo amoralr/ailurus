@@ -42,13 +42,12 @@ export function SearchBar({
     return () => clearTimeout(timer);
   }, [input]);
 
-  const performSearch = (query: string) => {
+  const performSearch = async (query: string) => {
     setQuery(query);
     setSearching(true);
 
-    // Simular pequeño delay para mostrar loading
-    setTimeout(() => {
-      const results = SearchService.search(query);
+    try {
+      const results = await SearchService.search(query);
       setResults(results);
       setSearching(false);
 
@@ -56,7 +55,11 @@ export function SearchBar({
       if (onSearch) {
         onSearch(query);
       }
-    }, 150);
+    } catch (error) {
+      console.error("[SearchBar] Search failed:", error);
+      setResults([]);
+      setSearching(false);
+    }
   };
 
   const handleClear = () => {
