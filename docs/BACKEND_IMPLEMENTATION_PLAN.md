@@ -1,108 +1,280 @@
-# 🚀 Plan de Implementación Backend - NestJS
+# 🚀 Backend Implementation Plan - NestJS
 
-**Proyecto**: Ailurus Documentation Platform  
 **Framework**: NestJS 11.x + Prisma 7.0.0 + SQLite 3  
-**Fecha**: 20 de noviembre, 2025  
-**Estado**: Plan de ejecución
+**Versión**: v0.5  
+**Última actualización**: Noviembre 2025
 
 ---
 
-## 📊 **ESTADO ACTUAL**
+## 📊 ESTADO ACTUAL
 
-### **✅ Completado (20 Nov 2025)**
+### Completado (70%)
 
 - ✅ Proyecto NestJS inicializado
 - ✅ Prisma configurado con SQLite + BetterSQLite3 adapter
 - ✅ Schema Prisma definido (7 tablas, 3NF)
-- ✅ Scripts npm configurados
-- ✅ Frontend con mocks funcionales (20 documentos)
-- ✅ **3 migraciones ejecutadas** (init_schema, FTS5)
-- ✅ **4 módulos feature-based implementados** (Documents, Folders, Categories, Search)
-- ✅ **21 controladores REST funcionales**
-- ✅ **4 servicios de negocio completos**
-- ✅ **Database poblada** (5 docs, 4 categorías, 11 folders)
-- ✅ **Infraestructura global configurada** (CORS, ValidationPipe, PrismaModule)
-- ✅ **FTS5 full-text search operacional** (unicode61, diacritics removal)
+- ✅ 5 módulos NestJS implementados
+- ✅ 21 archivos TypeScript
+- ✅ Database poblada con seed data
+- ✅ FTS5 full-text search operacional
 
-### **⏳ Pendiente**
+### Pendiente (30%)
 
-- ⏳ FASE 5: Migrar frontend de mocks a API real
+- ⏳ Migrar frontend de mocks a API real
 - ⏳ Testing E2E automatizado
 - ⏳ Documentación de API con Swagger
 - ⏳ Deploy y configuración de producción
 
 ---
 
-## 🎯 **OBJETIVOS DEL PLAN**
+## 🏗️ ARQUITECTURA DE MÓDULOS
 
-1. **Implementar backend NestJS** que sirva los mismos datos que actualmente están en mocks
-2. **Migrar gradualmente** el frontend de mocks a API real
-3. **Mantener funcionalidad** durante la transición
-4. **Priorizar features** según impacto en usuario
+**Implementación**: `backend/src/modules/`
+
+```mermaid
+graph TB
+    subgraph "API Layer - Controllers"
+        DC[DocumentsController<br/>documents.controller.ts]
+        FC[FoldersController<br/>folders.controller.ts]
+        CC[CategoriesController<br/>categories.controller.ts]
+        SC[SearchController<br/>search.controller.ts]
+    end
+    
+    subgraph "Service Layer - Business Logic"
+        DS[DocumentsService<br/>150 líneas]
+        FS[FoldersService<br/>244 líneas]
+        CS[CategoriesService<br/>80 líneas]
+        SS[SearchService<br/>99 líneas]
+    end
+    
+    subgraph "Data Layer"
+        PS[PrismaService<br/>ORM]
+        DB[(SQLite 3<br/>7 tablas en 3NF)]
+    end
+    
+    DC --> DS
+    FC --> FS
+    CC --> CS
+    SC --> SS
+    
+    DS --> PS
+    FS --> PS
+    CS --> PS
+    SS --> PS
+    
+    PS --> DB
+```
 
 ---
 
-## 📋 **ARQUITECTURA TARGET**
+## 📦 ESTADO DE MÓDULOS
 
-### **Estructura de Carpetas**
+### Tabla de Implementación
+
+| Módulo | Estado | Archivo Principal | Líneas | Métodos Clave |
+|--------|--------|-------------------|--------|---------------|
+| Documents | ✅ 100% | `documents.service.ts` | 150 | findAll, findBySlug, create, updateDraft, publish, archive |
+| Folders | ✅ 100% | `folders.service.ts` | 244 | findAll, buildTree, findByPath, create, update, delete |
+| Categories | ✅ 100% | `categories.service.ts` | ~80 | findAll, findById, getStats |
+| Search | ✅ 100% | `search.service.ts` | 99 | search (FTS5), logSearch, sanitizeQuery |
+| Prisma | ✅ 100% | `prisma.service.ts` | ~50 | onModuleInit, onModuleDestroy, $connect, $disconnect |
+
+---
+
+## 🔧 MÓDULO DOCUMENTS
+
+**Implementación**: `backend/src/modules/documents/`
+
+### Archivos
+
+- Controller: `documents.controller.ts`
+- Service: `documents.service.ts` (150 líneas)
+- DTOs: `dto/create-document.dto.ts`, `dto/update-document.dto.ts`
+
+### Funcionalidades Clave
+
+**Slug Generation**:
+- Normalización de texto (lowercase)
+- Remoción de acentos (NFD + regex)
+- Reemplazo de caracteres especiales por guiones
+- Validación de unicidad
+
+**Status Workflow**:
+```mermaid
+stateDiagram-v2
+    [*] --> DRAFT: create()
+    DRAFT --> DRAFT: updateDraft()
+    DRAFT --> PUBLISHED: publish()
+    PUBLISHED --> PUBLISHED: updateDraft()
+    PUBLISHED --> ARCHIVED: archive()
+    ARCHIVED --> [*]
+```
+
+**Validaciones**:
+- Title: máximo 200 caracteres
+- Content: requerido para publicar
+- CategoryId: debe existir en tabla Category
+- Slug: único en la base de datos
+
+---
+
+## 🗂️ MÓDULO FOLDERS
+
+**Implementación**: `backend/src/modules/folders/`
+
+### Archivos
+
+- Controller: `folders.controller.ts`
+- Service: `folders.service.ts` (244 líneas)
+- DTOs: `dto/folder-node-response.dto.ts`
+
+### Algoritmo BuildTree
+
+```mermaid
+flowchart TD
+    A[Obtener todos los folders de DB] --> B[Llamar buildTree parentId=null]
+    B --> C{Filtrar folders con parentId=null}
+    C --> D[Ordenar por campo order]
+    D --> E{Para cada folder raíz}
+    E --> F[Llamar buildTree recursivo con parentId=folder.id]
+    F --> G[Asignar children al folder]
+    G --> H{¿Más folders raíz?}
+    H -->|Sí| E
+    H -->|No| I[Retornar árbol completo]
+```
+
+**Características**:
+- Recursividad ilimitada
+- 29 nodos totales: 9 folders + 20 files
+- Paths estilo Obsidian: `"Equipo/Proyecto/Getting Started/Instalación"`
+- Validación de paths únicos
+- Validación de eliminación (no permite eliminar folders con children)
+
+---
+
+## 📚 MÓDULO CATEGORIES
+
+**Implementación**: `backend/src/modules/categories/`
+
+### Archivos
+
+- Controller: `categories.controller.ts`
+- Service: `categories.service.ts` (~80 líneas)
+
+### Categorías Fijas
+
+```mermaid
+graph LR
+    C1[🚀 Getting Started<br/>getting-started]
+    C2[🏗️ Architecture<br/>architecture]
+    C3[📚 API Reference<br/>api-reference]
+    C4[📖 Guides<br/>guides]
+    
+    C1 -.->|documentCount| D1[CategoryStats]
+    C2 -.->|documentCount| D1
+    C3 -.->|documentCount| D1
+    C4 -.->|documentCount| D1
+```
+
+**Funcionalidades**:
+- 4 categorías fijas (no se pueden crear más)
+- `documentCount` pre-calculado desde tabla `CategoryStats`
+- Ordenadas por campo `order`
+
+---
+
+## 🔍 MÓDULO SEARCH
+
+**Implementación**: `backend/src/modules/search/`
+
+### Archivos
+
+- Controller: `search.controller.ts`
+- Service: `search.service.ts` (99 líneas)
+
+### Flujo de Búsqueda FTS5
+
+```mermaid
+flowchart TD
+    A[Query de usuario] --> B[Sanitizar query<br/>remover caracteres especiales]
+    B --> C{¿Query válido?<br/>min 2 caracteres}
+    C -->|No| D[Retornar array vacío]
+    C -->|Sí| E[FTS5 MATCH en documents_fts]
+    E --> F[JOIN con tabla documents]
+    F --> G[Filtrar status=PUBLISHED]
+    G --> H[Ordenar por rank descendente]
+    H --> I[Aplicar LIMIT/OFFSET<br/>paginación]
+    I --> J[Retornar resultados]
+    J --> K[Registrar en ActivityLog]
+```
+
+**Características**:
+- SQLite FTS5 con tokenizer unicode61
+- Sanitización de queries para prevenir errores FTS5
+- Ranking por relevancia (campo `rank`)
+- Solo busca en documentos PUBLISHED
+- Logging de búsquedas en `ActivityLog`
+
+---
+
+## 🔧 INFRAESTRUCTURA GLOBAL
+
+### Configuración en main.ts
+
+**CORS**:
+- Origin: `http://localhost:4321`
+- Credentials: true
+
+**Validation Pipe**:
+- Whitelist: true (remueve propiedades no definidas en DTOs)
+- Transform: true (transforma tipos automáticamente)
+- ForbidNonWhitelisted: true (rechaza propiedades desconocidas)
+
+**Rate Limiting**:
+- 10 requests por segundo (burst protection)
+- 50 requests por 10 segundos (uso normal)
+- 100 requests por minuto (límite general)
+
+---
+
+## 📁 ESTRUCTURA DE CARPETAS
 
 ```
 backend/
 ├── prisma/
-│   ├── schema.prisma          ✅ Definido
-│   ├── seed.ts                ⏳ Por crear
-│   └── migrations/            ⏳ Por generar
+│   ├── schema.prisma          # Schema de 7 tablas
+│   ├── seed.ts                # Seed con 20 documentos
+│   └── migrations/            # Migraciones SQL
 ├── src/
-│   ├── main.ts                ✅ Base existente
-│   ├── app.module.ts          ✅ Base existente
+│   ├── main.ts                # Bootstrap de NestJS
+│   ├── app.module.ts          # Módulo raíz
 │   │
-│   ├── common/                ⏳ CREAR
-│   │   ├── decorators/
-│   │   ├── filters/
-│   │   ├── guards/
-│   │   ├── interceptors/
-│   │   └── pipes/
-│   │
-│   ├── config/                ⏳ CREAR
-│   │   ├── app.config.ts
-│   │   ├── database.config.ts
-│   │   └── cors.config.ts
-│   │
-│   ├── modules/               ⏳ CREAR
-│   │   ├── documents/
-│   │   │   ├── documents.module.ts
-│   │   │   ├── documents.controller.ts
-│   │   │   ├── documents.service.ts
-│   │   │   ├── dto/
-│   │   │   │   ├── create-document.dto.ts
-│   │   │   │   ├── update-document.dto.ts
-│   │   │   │   └── document-response.dto.ts
-│   │   │   └── entities/
-│   │   │       └── document.entity.ts
-│   │   │
-│   │   ├── folders/
-│   │   │   ├── folders.module.ts
-│   │   │   ├── folders.controller.ts
-│   │   │   ├── folders.service.ts
-│   │   │   └── dto/
-│   │   │
-│   │   ├── categories/
-│   │   │   ├── categories.module.ts
-│   │   │   ├── categories.controller.ts
-│   │   │   └── categories.service.ts
-│   │   │
-│   │   ├── search/
-│   │   │   ├── search.module.ts
-│   │   │   ├── search.controller.ts
-│   │   │   └── search.service.ts
-│   │   │
-│   │   └── prisma/
-│   │       ├── prisma.module.ts
-│   │       └── prisma.service.ts
-│   │
-│   └── shared/                ⏳ CREAR
-│       ├── interfaces/
-│       └── types/
+│   └── modules/
+│       ├── documents/
+│       │   ├── documents.module.ts
+│       │   ├── documents.controller.ts
+│       │   ├── documents.service.ts
+│       │   └── dto/
+│       │
+│       ├── folders/
+│       │   ├── folders.module.ts
+│       │   ├── folders.controller.ts
+│       │   ├── folders.service.ts
+│       │   └── dto/
+│       │
+│       ├── categories/
+│       │   ├── categories.module.ts
+│       │   ├── categories.controller.ts
+│       │   └── categories.service.ts
+│       │
+│       ├── search/
+│       │   ├── search.module.ts
+│       │   ├── search.controller.ts
+│       │   └── search.service.ts
+│       │
+│       └── prisma/
+│           ├── prisma.module.ts
+│           └── prisma.service.ts
 │
 └── test/
     └── e2e/
@@ -110,1190 +282,43 @@ backend/
 
 ---
 
-## 🔢 **FASES DE IMPLEMENTACIÓN**
+## 🧪 TESTING
 
-### **FASE 0: Preparación** ✅ **COMPLETADO** (2.5 horas)
+**Framework**: Jest (configurado pero no implementado en POC)
 
-**Objetivo**: Tener infraestructura base lista y database operacional
+**Estrategia futura**:
+- Unit tests para services
+- Integration tests para controllers
+- E2E tests para flujos completos
 
-**Estado**: 🟢 100% - Infraestructura operacional
+---
 
-#### **0.1: Ejecutar Migration Inicial (30 min)**
+## 🚀 DEPLOYMENT
 
-**Tareas**:
-
-1. Revisar `prisma/schema.prisma` (ya existe)
-2. Ejecutar `pnpm prisma:migrate` para crear primera migration
-3. Verificar tablas creadas con `pnpm prisma:studio`
-4. Generar Prisma Client `pnpm prisma:generate`
-
-**Comandos**:
+### Build para Producción
 
 ```bash
-cd backend
-pnpm prisma:migrate
-# Nombrar: "init_schema"
-pnpm prisma:studio  # Verificar en http://localhost:5555
+pnpm build
 ```
 
-**Archivos generados**:
+Genera `dist/` con código compilado.
 
-- `prisma/migrations/YYYYMMDDHHMMSS_init_schema/migration.sql`
-- `node_modules/.prisma/client/` (Prisma Client generado)
-
----
-
-#### **0.2: Crear PrismaModule Global (30 min)**
-
-**Objetivo**: Service centralizado para acceso a DB
-
-**Archivos a crear**:
-
-**`src/modules/prisma/prisma.module.ts`**
-
-```typescript
-import { Global, Module } from "@nestjs/common";
-import { PrismaService } from "./prisma.service";
-
-@Global()
-@Module({
-  providers: [PrismaService],
-  exports: [PrismaService],
-})
-export class PrismaModule {}
-```
-
-**`src/modules/prisma/prisma.service.ts`**
-
-```typescript
-import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
-
-@Injectable()
-export class PrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
-  async onModuleInit() {
-    await this.$connect();
-    console.log("✅ Prisma connected to SQLite");
-  }
-
-  async onModuleDestroy() {
-    await this.$disconnect();
-    console.log("❌ Prisma disconnected");
-  }
-}
-```
-
-**Actualizar `src/app.module.ts`**:
-
-```typescript
-import { Module } from "@nestjs/common";
-import { PrismaModule } from "./modules/prisma/prisma.module";
-
-@Module({
-  imports: [PrismaModule],
-  controllers: [],
-  providers: [],
-})
-export class AppModule {}
-```
-
-**Verificar**:
-
-```bash
-pnpm start:dev
-# Debe mostrar: ✅ Prisma connected to SQLite
-```
-
----
-
-#### **0.3: Configurar Infraestructura Global (1 hora)**
-
-**Objetivo**: CORS, validation pipes, rate limiting
-
-**`src/main.ts`** (actualizar):
-
-```typescript
-import { NestFactory } from "@nestjs/core";
-import { ValidationPipe } from "@nestjs/common";
-import { AppModule } from "./app.module";
-
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
-  // CORS para frontend
-  app.enableCors({
-    origin: "http://localhost:4321",
-    credentials: true,
-  });
-
-  // Validation global
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    })
-  );
-
-  // Sin prefijo /api (endpoints directos)
-  await app.listen(3000);
-  console.log(`🚀 Backend running on http://localhost:3000`);
-}
-bootstrap();
-```
-
-**Instalar dependencias**:
-
-```bash
-pnpm add class-validator class-transformer
-```
-
-**Verificar**:
-
-```bash
-curl http://localhost:3000
-# Debe responder (aunque sea con 404)
-```
-
----
-
-#### **0.4: Crear Seed con 20 Documentos (1 hora)**
-
-**Objetivo**: Poblar database con datos reales desde mocks
-
-**`prisma/seed.ts`** (crear):
-
-```typescript
-import { PrismaClient, DocumentStatus } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
-// Importar datos de mocks del frontend
-const CATEGORIES = [
-  { id: "getting-started", name: "Getting Started", icon: "🚀", order: 1 },
-  { id: "architecture", name: "Architecture", icon: "🏗️", order: 2 },
-  { id: "api-reference", name: "API Reference", icon: "📚", order: 3 },
-  { id: "guides", name: "Guides", icon: "📖", order: 4 },
-];
-
-const DOCUMENTS = [
-  {
-    slug: "instalacion",
-    title: "Guía de Instalación",
-    content: `# Guía de Instalación\n\n...`, // Contenido completo
-    excerpt: "Aprende a instalar Ailurus paso a paso",
-    categoryId: "getting-started",
-    subcategory: "Primeros Pasos",
-    path: "Equipo/Proyecto/Getting Started/Primeros Pasos/Guía de Instalación",
-    status: DocumentStatus.PUBLISHED,
-    createdBy: "admin",
-  },
-  // ... 19 documentos más
-];
-
-const FOLDERS = [
-  {
-    name: "Equipo",
-    type: "FOLDER",
-    icon: "👥",
-    path: "Equipo",
-    order: 1,
-    parentId: null,
-  },
-  // ... resto de folders
-];
-
-async function main() {
-  console.log("🌱 Seeding database...");
-
-  // 1. Limpiar datos existentes
-  await prisma.folderDocument.deleteMany();
-  await prisma.folderCategory.deleteMany();
-  await prisma.categoryStats.deleteMany();
-  await prisma.activityLog.deleteMany();
-  await prisma.document.deleteMany();
-  await prisma.folder.deleteMany();
-  await prisma.category.deleteMany();
-
-  // 2. Crear categorías
-  await prisma.category.createMany({ data: CATEGORIES });
-  console.log("✅ Categories created");
-
-  // 3. Crear documentos
-  await prisma.document.createMany({ data: DOCUMENTS });
-  console.log("✅ Documents created");
-
-  // 4. Crear folders (recursivo)
-  for (const folder of FOLDERS) {
-    await prisma.folder.create({ data: folder });
-  }
-  console.log("✅ Folders created");
-
-  // 5. Crear CategoryStats
-  for (const category of CATEGORIES) {
-    const stats = await prisma.document.groupBy({
-      by: ["status"],
-      where: { categoryId: category.id },
-      _count: true,
-    });
-
-    await prisma.categoryStats.create({
-      data: {
-        categoryId: category.id,
-        totalDocs: stats.reduce((sum, s) => sum + s._count, 0),
-        publishedDocs: stats.find((s) => s.status === "PUBLISHED")?._count || 0,
-        draftDocs: stats.find((s) => s.status === "DRAFT")?._count || 0,
-        archivedDocs: stats.find((s) => s.status === "ARCHIVED")?._count || 0,
-      },
-    });
-  }
-  console.log("✅ Category stats created");
-
-  console.log("🎉 Seed completed!");
-}
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
-```
-
-**Ejecutar**:
-
-```bash
-pnpm prisma:seed
-```
-
-**Verificar**:
-
-```bash
-pnpm prisma:studio
-# Revisar que hay 20 documentos, 4 categorías, folders
-```
-
----
-
-### **FASE 1: Módulo Documents** ✅ **COMPLETADO** (5 horas)
-
-**Objetivo**: API REST completa para documentos (reemplaza mocks)
-
-**Estado**: 🟢 100% - 6 endpoints REST funcionales, CRUD completo, slug generation, status workflow
-
-#### **1.1: Crear Estructura Base (1 hora)**
-
-**Generar con CLI**:
-
-```bash
-cd backend/src
-nest g module modules/documents
-nest g controller modules/documents
-nest g service modules/documents
-```
-
-**Estructura generada**:
-
-```
-src/modules/documents/
-├── documents.module.ts
-├── documents.controller.ts
-├── documents.service.ts
-└── documents.controller.spec.ts
-```
-
----
-
-#### **1.2: Crear DTOs (1 hora)**
-
-**`src/modules/documents/dto/create-document.dto.ts`**
-
-```typescript
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  MaxLength,
-  IsEnum,
-} from "class-validator";
-import { DocumentStatus } from "@prisma/client";
-
-export class CreateDocumentDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(200)
-  title: string;
-
-  @IsString()
-  @IsNotEmpty()
-  content: string;
-
-  @IsString()
-  @IsOptional()
-  @MaxLength(500)
-  excerpt?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  categoryId: string;
-
-  @IsString()
-  @IsOptional()
-  subcategory?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  path: string;
-
-  @IsEnum(DocumentStatus)
-  @IsOptional()
-  status?: DocumentStatus;
-}
-```
-
-**`src/modules/documents/dto/update-document.dto.ts`**
-
-```typescript
-import { PartialType } from "@nestjs/mapped-types";
-import { CreateDocumentDto } from "./create-document.dto";
-
-export class UpdateDocumentDto extends PartialType(CreateDocumentDto) {}
-```
-
-**`src/modules/documents/dto/document-response.dto.ts`**
-
-```typescript
-import { DocumentStatus } from "@prisma/client";
-
-export class DocumentResponseDto {
-  id: number;
-  slug: string;
-  title: string;
-  content: string;
-  excerpt: string | null;
-  categoryId: string;
-  subcategory: string | null;
-  path: string;
-  status: DocumentStatus;
-  createdAt: Date;
-  updatedAt: Date;
-  createdBy: string;
-}
-```
-
----
-
-#### **1.3: Implementar Service (2 horas)**
-
-**`src/modules/documents/documents.service.ts`**
-
-```typescript
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { CreateDocumentDto } from "./dto/create-document.dto";
-import { UpdateDocumentDto } from "./dto/update-document.dto";
-import { DocumentStatus } from "@prisma/client";
-
-@Injectable()
-export class DocumentsService {
-  constructor(private prisma: PrismaService) {}
-
-  // GET /docs - Listar documentos publicados
-  async findAll() {
-    return this.prisma.document.findMany({
-      where: { status: DocumentStatus.PUBLISHED },
-      orderBy: { createdAt: "desc" },
-    });
-  }
-
-  // GET /docs/:slug - Obtener por slug
-  async findBySlug(slug: string) {
-    const document = await this.prisma.document.findUnique({
-      where: { slug },
-    });
-
-    if (!document) {
-      throw new NotFoundException(`Document with slug "${slug}" not found`);
-    }
-
-    return document;
-  }
-
-  // GET /docs?category=:id - Filtrar por categoría
-  async findByCategory(categoryId: string) {
-    return this.prisma.document.findMany({
-      where: {
-        categoryId,
-        status: DocumentStatus.PUBLISHED,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-  }
-
-  // POST /docs - Crear documento
-  async create(createDto: CreateDocumentDto) {
-    // Generar slug desde title
-    const slug = this.generateSlug(createDto.title);
-
-    return this.prisma.document.create({
-      data: {
-        ...createDto,
-        slug,
-        status: createDto.status || DocumentStatus.DRAFT,
-      },
-    });
-  }
-
-  // PUT /docs/:id/draft - Actualizar draft
-  async updateDraft(id: number, updateDto: UpdateDocumentDto) {
-    const document = await this.findById(id);
-
-    return this.prisma.document.update({
-      where: { id },
-      data: updateDto,
-    });
-  }
-
-  // PUT /docs/:id/publish - Publicar documento
-  async publish(id: number) {
-    const document = await this.findById(id);
-
-    if (!document.content || document.content.trim().length === 0) {
-      throw new BadRequestException(
-        "Cannot publish document with empty content"
-      );
-    }
-
-    return this.prisma.document.update({
-      where: { id },
-      data: { status: DocumentStatus.PUBLISHED },
-    });
-  }
-
-  // DELETE /docs/:id - Archivar (soft delete)
-  async archive(id: number) {
-    await this.findById(id);
-
-    return this.prisma.document.update({
-      where: { id },
-      data: { status: DocumentStatus.ARCHIVED },
-    });
-  }
-
-  // Helper: Buscar por ID
-  private async findById(id: number) {
-    const document = await this.prisma.document.findUnique({
-      where: { id },
-    });
-
-    if (!document) {
-      throw new NotFoundException(`Document with ID ${id} not found`);
-    }
-
-    return document;
-  }
-
-  // Helper: Generar slug
-  private generateSlug(title: string): string {
-    return title
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Quitar acentos
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  }
-}
-```
-
----
-
-#### **1.4: Implementar Controller (1-2 horas)**
-
-**`src/modules/documents/documents.controller.ts`**
-
-```typescript
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-} from "@nestjs/common";
-import { DocumentsService } from "./documents.service";
-import { CreateDocumentDto } from "./dto/create-document.dto";
-import { UpdateDocumentDto } from "./dto/update-document.dto";
-
-@Controller("docs")
-export class DocumentsController {
-  constructor(private documentsService: DocumentsService) {}
-
-  @Get()
-  findAll(@Query("category") category?: string) {
-    if (category) {
-      return this.documentsService.findByCategory(category);
-    }
-    return this.documentsService.findAll();
-  }
-
-  @Get(":slug")
-  findBySlug(@Param("slug") slug: string) {
-    return this.documentsService.findBySlug(slug);
-  }
-
-  @Post()
-  create(@Body() createDto: CreateDocumentDto) {
-    return this.documentsService.create(createDto);
-  }
-
-  @Put(":id/draft")
-  updateDraft(
-    @Param("id", ParseIntPipe) id: number,
-    @Body() updateDto: UpdateDocumentDto
-  ) {
-    return this.documentsService.updateDraft(id, updateDto);
-  }
-
-  @Put(":id/publish")
-  publish(@Param("id", ParseIntPipe) id: number) {
-    return this.documentsService.publish(id);
-  }
-
-  @Delete(":id")
-  archive(@Param("id", ParseIntPipe) id: number) {
-    return this.documentsService.archive(id);
-  }
-}
-```
-
----
-
-#### **1.5: Actualizar AppModule (5 min)**
-
-**`src/app.module.ts`**
-
-```typescript
-import { Module } from "@nestjs/common";
-import { PrismaModule } from "./modules/prisma/prisma.module";
-import { DocumentsModule } from "./modules/documents/documents.module";
-
-@Module({
-  imports: [
-    PrismaModule,
-    DocumentsModule, // ✅ Agregar
-  ],
-})
-export class AppModule {}
-```
-
----
-
-#### **1.6: Testing Manual (30 min)**
-
-**Verificar endpoints**:
-
-```bash
-# 1. Listar documentos
-curl http://localhost:3000/docs
-
-# 2. Obtener documento por slug
-curl http://localhost:3000/docs/instalacion
-
-# 3. Filtrar por categoría
-curl http://localhost:3000/docs?category=getting-started
-
-# 4. Crear documento
-curl -X POST http://localhost:3000/docs \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Test Doc",
-    "content": "# Test\n\nContenido de prueba",
-    "categoryId": "guides",
-    "path": "Test/Path"
-  }'
-
-# 5. Publicar documento (id = 21, el recién creado)
-curl -X PUT http://localhost:3000/docs/21/publish
-```
-
-**Resultado esperado**:
-
-- ✅ GET /docs devuelve 20 documentos publicados
-- ✅ GET /docs/instalacion devuelve documento completo
-- ✅ POST /docs crea documento con status DRAFT
-- ✅ PUT /docs/:id/publish cambia status a PUBLISHED
-
----
-
-### **FASE 2: Módulo Folders** ✅ **COMPLETADO** (3.5 horas)
-
-**Objetivo**: API para navegación jerárquica (reemplaza MOCK_FOLDERS)
-
-**Estado**: 🟢 100% - 5 endpoints REST, buildTree() recursivo, many-to-many relations, path validation
-
-#### **2.1: Generar Estructura (15 min)**
-
-```bash
-nest g module modules/folders
-nest g controller modules/folders
-nest g service modules/folders
-```
-
----
-
-#### **2.2: Implementar Service (2 horas)**
-
-**`src/modules/folders/folders.service.ts`**
-
-```typescript
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-
-interface FolderNode {
-  id: number;
-  name: string;
-  type: "FOLDER" | "FILE";
-  icon: string | null;
-  path: string;
-  order: number;
-  children?: FolderNode[];
-  slug?: string;
-}
-
-@Injectable()
-export class FoldersService {
-  constructor(private prisma: PrismaService) {}
-
-  // GET /folders - Obtener árbol completo
-  async getTree(): Promise<FolderNode[]> {
-    const allFolders = await this.prisma.folder.findMany({
-      orderBy: { order: "asc" },
-    });
-
-    return this.buildTree(allFolders);
-  }
-
-  // GET /folders/:path - Obtener nodo por path
-  async findByPath(path: string): Promise<FolderNode> {
-    const folder = await this.prisma.folder.findUnique({
-      where: { path },
-    });
-
-    if (!folder) {
-      throw new NotFoundException(`Folder with path "${path}" not found`);
-    }
-
-    // Obtener hijos
-    const children = await this.prisma.folder.findMany({
-      where: { parentId: folder.id },
-      orderBy: { order: "asc" },
-    });
-
-    return {
-      ...folder,
-      children: children.length > 0 ? children : undefined,
-    };
-  }
-
-  // Helper: Construir árbol recursivo
-  private buildTree(
-    folders: any[],
-    parentId: number | null = null
-  ): FolderNode[] {
-    const tree: FolderNode[] = [];
-
-    for (const folder of folders) {
-      if (folder.parentId === parentId) {
-        const node: FolderNode = {
-          id: folder.id,
-          name: folder.name,
-          type: folder.type,
-          icon: folder.icon,
-          path: folder.path,
-          order: folder.order,
-          slug: folder.slug,
-        };
-
-        const children = this.buildTree(folders, folder.id);
-        if (children.length > 0) {
-          node.children = children;
-        }
-
-        tree.push(node);
-      }
-    }
-
-    return tree;
-  }
-}
-```
-
----
-
-#### **2.3: Implementar Controller (30 min)**
-
-**`src/modules/folders/folders.controller.ts`**
-
-```typescript
-import { Controller, Get, Param } from "@nestjs/common";
-import { FoldersService } from "./folders.service";
-
-@Controller("folders")
-export class FoldersController {
-  constructor(private foldersService: FoldersService) {}
-
-  @Get()
-  getTree() {
-    return this.foldersService.getTree();
-  }
-
-  @Get(":path(*)")
-  findByPath(@Param("path") path: string) {
-    return this.foldersService.findByPath(path);
-  }
-}
-```
-
----
-
-#### **2.4: Testing (30 min)**
-
-```bash
-# 1. Obtener árbol completo
-curl http://localhost:3000/folders
-
-# 2. Obtener nodo específico
-curl http://localhost:3000/folders/Equipo/Proyecto/Getting%20Started
-```
-
----
-
-### **FASE 3: Módulo Categories** ✅ **COMPLETADO** (1.5 horas)
-
-**Objetivo**: API para categorías con estadísticas
-
-**Estado**: 🟢 100% - 5 endpoints REST, stats aggregation, TypeScript import type fix
-
-#### **3.1: Generar Estructura (15 min)**
-
-```bash
-nest g module modules/categories
-nest g controller modules/categories
-nest g service modules/categories
-```
-
----
-
-#### **3.2: Implementar Service (45 min)**
-
-**`src/modules/categories/categories.service.ts`**
-
-```typescript
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-
-@Injectable()
-export class CategoriesService {
-  constructor(private prisma: PrismaService) {}
-
-  async findAll() {
-    const categories = await this.prisma.category.findMany({
-      orderBy: { order: "asc" },
-    });
-
-    // Enriquecer con stats
-    const categoriesWithStats = await Promise.all(
-      categories.map(async (category) => {
-        const stats = await this.prisma.categoryStats.findUnique({
-          where: { categoryId: category.id },
-        });
-
-        return {
-          ...category,
-          count: stats?.totalDocs || 0,
-          publishedCount: stats?.publishedDocs || 0,
-        };
-      })
-    );
-
-    return categoriesWithStats;
-  }
-}
-```
-
----
-
-#### **3.3: Implementar Controller (15 min)**
-
-**`src/modules/categories/categories.controller.ts`**
-
-```typescript
-import { Controller, Get } from "@nestjs/common";
-import { CategoriesService } from "./categories.service";
-
-@Controller("categories")
-export class CategoriesController {
-  constructor(private categoriesService: CategoriesService) {}
-
-  @Get()
-  findAll() {
-    return this.categoriesService.findAll();
-  }
-}
-```
-
----
-
-### **FASE 4: Módulo Search** ✅ **COMPLETADO** (3.5 horas)
-
-**Objetivo**: Búsqueda full-text con SQLite FTS5
-
-**Estado**: 🟢 100% - FTS5 virtual table, 4 triggers, $queryRaw queries, BigInt fix, ActivityLog integration
-
-#### **4.1: Crear Virtual Table FTS5 (1 hora)**
-
-**Migration manual** `prisma/migrations/XXX_add_fts5/migration.sql`:
-
-```sql
--- Crear virtual table para FTS5
-CREATE VIRTUAL TABLE documents_fts USING fts5(
-  slug,
-  title,
-  content,
-  excerpt,
-  path,
-  content=Document,
-  content_rowid=id
-);
-
--- Triggers para mantener sincronizado
-CREATE TRIGGER documents_fts_insert AFTER INSERT ON Document
-BEGIN
-  INSERT INTO documents_fts(rowid, slug, title, content, excerpt, path)
-  VALUES (new.id, new.slug, new.title, new.content, new.excerpt, new.path);
-END;
-
-CREATE TRIGGER documents_fts_update AFTER UPDATE ON Document
-BEGIN
-  UPDATE documents_fts
-  SET slug = new.slug,
-      title = new.title,
-      content = new.content,
-      excerpt = new.excerpt,
-      path = new.path
-  WHERE rowid = old.id;
-END;
-
-CREATE TRIGGER documents_fts_delete AFTER DELETE ON Document
-BEGIN
-  DELETE FROM documents_fts WHERE rowid = old.id;
-END;
-
--- Poblar con datos existentes
-INSERT INTO documents_fts(rowid, slug, title, content, excerpt, path)
-SELECT id, slug, title, content, excerpt, path FROM Document;
-```
-
-**Ejecutar**:
-
-```bash
-pnpm prisma:migrate
-# Verificar en Prisma Studio
-```
-
----
-
-#### **4.2: Implementar Service (1-2 horas)**
-
-**`src/modules/search/search.service.ts`**
-
-```typescript
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-
-interface SearchResult {
-  id: number;
-  slug: string;
-  title: string;
-  excerpt: string | null;
-  path: string;
-  rank: number;
-}
-
-@Injectable()
-export class SearchService {
-  constructor(private prisma: PrismaService) {}
-
-  async search(query: string): Promise<SearchResult[]> {
-    if (!query || query.trim().length < 2) {
-      return [];
-    }
-
-    // FTS5 query
-    const results = await this.prisma.$queryRawUnsafe<SearchResult[]>(
-      `
-      SELECT 
-        d.id,
-        d.slug,
-        d.title,
-        d.excerpt,
-        d.path,
-        fts.rank
-      FROM documents_fts fts
-      INNER JOIN Document d ON fts.rowid = d.id
-      WHERE documents_fts MATCH ?
-        AND d.status = 'PUBLISHED'
-      ORDER BY rank
-      LIMIT 20
-    `,
-      query
-    );
-
-    // Log búsqueda
-    await this.logSearch(query, results.length);
-
-    return results;
-  }
-
-  private async logSearch(query: string, resultsCount: number) {
-    await this.prisma.$executeRaw`
-      INSERT INTO ActivityLog (entityType, entityId, action, userId, changes)
-      VALUES ('search', NULL, 'search_query', 'anonymous', ${JSON.stringify({
-        query,
-        resultsCount,
-      })})
-    `;
-  }
-}
-```
-
----
-
-#### **4.3: Implementar Controller (30 min)**
-
-**`src/modules/search/search.controller.ts`**
-
-```typescript
-import { Controller, Get, Query } from "@nestjs/common";
-import { SearchService } from "./search.service";
-
-@Controller("search")
-export class SearchController {
-  constructor(private searchService: SearchService) {}
-
-  @Get()
-  search(@Query("q") query: string) {
-    return this.searchService.search(query);
-  }
-}
-```
-
----
-
-## 🔄 **MIGRACIÓN FRONTEND → BACKEND**
-
-### **Estrategia de Migración Gradual**
-
-#### **Paso 1: Habilitar API en Paralelo**
-
-**`frontend/src/documents/services/documents.service.ts`**
-
-```typescript
-const USE_MOCKS = import.meta.env.PUBLIC_USE_MOCKS === "true";
-const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000";
-
-export async function getDocuments() {
-  if (USE_MOCKS) {
-    return MOCK_DOCUMENTS; // Actual
-  }
-
-  // Nueva lógica
-  const response = await fetch(`${API_URL}/docs`);
-  return response.json();
-}
-```
-
-**`.env`** (frontend):
+### Variables de Entorno
 
 ```env
-PUBLIC_USE_MOCKS=false  # Cambiar a false cuando backend esté listo
-PUBLIC_API_URL=http://localhost:3000
+DATABASE_URL="file:./dev.db"
+NODE_ENV=production
+PORT=3000
+CORS_ORIGIN=https://ailurus.dev
 ```
 
 ---
 
-#### **Paso 2: Testing A/B**
+## 📚 REFERENCIAS
 
-1. **Con mocks** (`PUBLIC_USE_MOCKS=true`): Verificar que frontend funciona
-2. **Con API** (`PUBLIC_USE_MOCKS=false`): Verificar que API responde correctamente
-3. **Comparar respuestas**: Asegurar que estructura es idéntica
+- **Módulos**: `backend/src/modules/`
+- **Schema Prisma**: `backend/prisma/schema.prisma`
+- **Seed**: `backend/prisma/seed.ts`
+- **DTOs**: `backend/src/modules/*/dto/`
 
----
-
-#### **Paso 3: Migración por Feature**
-
-| Feature               | Orden | Complejidad | Duración |
-| --------------------- | ----- | ----------- | -------- |
-| GET /docs             | 1     | Baja        | 30 min   |
-| GET /docs/:slug       | 2     | Baja        | 30 min   |
-| GET /folders          | 3     | Media       | 1 hora   |
-| GET /categories       | 4     | Baja        | 30 min   |
-| GET /search           | 5     | Media       | 1 hora   |
-| POST /docs (crear)    | 6     | Alta        | 2 horas  |
-| PUT /docs/:id/draft   | 7     | Alta        | 2 horas  |
-| PUT /docs/:id/publish | 8     | Media       | 1 hora   |
-
----
-
-## 📊 **ESTIMACIONES TOTALES**
-
-| Fase      | Descripción          | Horas Min | Horas Max | Prioridad    |
-| --------- | -------------------- | --------- | --------- | ------------ |
-| 0         | Preparación          | 2         | 3         | 🔴 Crítico   |
-| 1         | Documents            | 4         | 6         | 🔥 Alta      |
-| 2         | Folders              | 3         | 4         | 🔥 Alta      |
-| 3         | Categories           | 1         | 2         | 🟡 Media     |
-| 4         | Search               | 3         | 4         | 🔥 Alta      |
-| 5         | Migración            | 3         | 5         | 🔥 Alta      |
-| **TOTAL** | **Backend completo** | **16h**   | **24h**   | **2-3 días** |
-
----
-
-## ✅ **CHECKLIST DE PROGRESO**
-
-### **FASE 0: Preparación** ✅ **COMPLETADO**
-
-- [x] 0.1: Ejecutar migration inicial ✅
-- [x] 0.2: Crear PrismaModule global ✅
-- [x] 0.3: Configurar infraestructura (CORS, validation) ✅
-- [x] 0.4: Crear seed con 5 documentos reales ✅
-
-### **FASE 1: Documents** ✅ **COMPLETADO**
-
-- [x] 1.1: Generar estructura con CLI ✅
-- [x] 1.2: Crear DTOs (Create, Update, Response) ✅
-- [x] 1.3: Implementar DocumentsService ✅
-- [x] 1.4: Implementar DocumentsController ✅
-- [x] 1.5: Actualizar AppModule ✅
-- [x] 1.6: Testing manual de endpoints ✅
-
-### **FASE 2: Folders** ✅ **COMPLETADO**
-
-- [x] 2.1: Generar estructura con CLI ✅
-- [x] 2.2: Implementar FoldersService con buildTree ✅
-- [x] 2.3: Implementar FoldersController ✅
-- [x] 2.4: Testing manual ✅
-
-### **FASE 3: Categories** ✅ **COMPLETADO**
-
-- [x] 3.1: Generar estructura con CLI ✅
-- [x] 3.2: Implementar CategoriesService con stats ✅
-- [x] 3.3: Implementar CategoriesController ✅
-
-### **FASE 4: Search** ✅ **COMPLETADO**
-
-- [x] 4.1: Crear virtual table FTS5 con triggers ✅
-- [x] 4.2: Implementar SearchService con $queryRaw ✅
-- [x] 4.3: Implementar SearchController ✅
-
-### **FASE 5: Migración Frontend** ⏳ **PENDIENTE**
-
-- [ ] 5.1: Agregar flag USE_MOCKS en .env
-- [ ] 5.2: Actualizar services con condicional
-- [ ] 5.3: Testing A/B (mocks vs API)
-- [ ] 5.4: Migrar feature por feature
-- [ ] 5.5: Eliminar mocks cuando todo funcione
-
----
-
-## 🎯 **SIGUIENTE PASO**
-
-**ACCIÓN INMEDIATA**: Comenzar FASE 5 - Migración Frontend (3-5 horas)
-
-### **Tareas de FASE 5**
-
-1. **Configurar flag USE_MOCKS** en frontend .env
-2. **Crear servicios API** en frontend/src/services/api/
-3. **Actualizar servicios existentes** con condicional mock/API
-4. **Testing A/B**: Comparar respuestas mock vs API
-5. **Migración secuencial**: Documents → Folders → Categories → Search
-6. **Validación completa**: Verificar todas las features funcionan con API
-7. **Limpieza**: Remover mocks cuando migración esté completa
-
-### **Resultados de FASE 0-4**
-
-✅ **21 endpoints REST operacionales**:
-
-- **Documents**: 6 endpoints (GET /docs, GET /docs/:slug, GET /docs?category, POST, PUT /draft, PUT /publish, DELETE)
-- **Folders**: 5 endpoints (GET /folders, GET /folders/:path, POST, PUT, DELETE)
-- **Categories**: 5 endpoints (GET /categories, GET /categories/:id, POST, PUT, DELETE)
-- **Search**: 1 endpoint (GET /search?q=query&limit=10&offset=0)
-- **Health**: 4 endpoints adicionales (root, health, metrics, ready)
-
-✅ **Base de datos operacional**:
-
-- 5 documentos publicados indexados en FTS5
-- 4 categorías con estadísticas (getting-started:3, architecture:1, api-reference:0, guides:1)
-- 11 folders en estructura jerárquica (3 niveles)
-- 6 entradas en documents_fts virtual table
-
-✅ **Features técnicas**:
-
-- FTS5 full-text search con diacritic removal ("instalacion" encuentra "Instalación")
-- Recursive tree building para folders
-- Stats aggregation con fallback manual
-- ActivityLog para búsquedas
-- BigInt conversion fix para JSON serialization
-- TypeScript import type fix para isolatedModules
-
-**Última actualización**: 20 de noviembre, 2025  
-**Versión**: 2.0.0 (Backend completo)  
-**Estado**: ✅ FASE 0-4 completadas, listo para migración frontend
-
-```bash
-# 1. Migration inicial
-cd backend
-pnpm prisma:migrate
-
-# 2. Crear PrismaModule
-# (seguir instrucciones de sección 0.2)
-
-# 3. Actualizar main.ts
-# (seguir instrucciones de sección 0.3)
-
-# 4. Crear seed.ts
-# (seguir instrucciones de sección 0.4)
-
-# 5. Ejecutar seed
-pnpm prisma:seed
-
-# 6. Verificar
-pnpm prisma:studio  # http://localhost:5555
-```
-
-**Una vez completada FASE 0**: Comenzar con FASE 1 (Documents) que es la base para todo lo demás.
-
----
-
-## 📚 **RECURSOS**
-
-- [ROADMAP.md](./ROADMAP.md) - Prioridades generales del proyecto
-- [API.md](./API.md) - Especificación completa de endpoints
-- [DATABASE.md](./DATABASE.md) - Schema Prisma detallado
-- [FRONTEND.md](./FRONTEND.md) - Arquitectura del frontend
-- [Prisma Docs](https://www.prisma.io/docs/) - Documentación oficial
-- [NestJS Docs](https://docs.nestjs.com/) - Documentación oficial
-
----
-
-**Última actualización**: 20 de noviembre, 2025  
-**Versión**: 1.0.0  
-**Estado**: Plan listo para ejecución
+**Siguiente**: Ver [Frontend Migration Plan](./FRONTEND_MIGRATION_PLAN.md) para integración con API.

@@ -1,768 +1,436 @@
 # 📡 API Reference
 
 **Base URL**: `http://localhost:3000`  
-**Fecha**: 20 de noviembre, 2025  
-**Versión**: v0.5
+**Versión**: v0.5  
+**Última actualización**: Noviembre 2025
 
 ---
 
-## 🔧 **CONFIGURACIÓN**
+## 🔧 CONFIGURACIÓN
 
-### **Variables de Entorno**
+### Variables de Entorno
 
 **Backend (.env)**
-
-- API_HOST: localhost:3000
-- API_BASE_URL: http://localhost:3000
-- UPLOAD_BASE_URL: /uploads
-- FRONTEND_URL: http://localhost:4321
+- `API_HOST`: localhost:3000
+- `API_BASE_URL`: http://localhost:3000
+- `UPLOAD_BASE_URL`: /uploads
+- `FRONTEND_URL`: http://localhost:4321
 
 **Producción**
-
-- API_HOST: api.ailurus.dev
-- API_BASE_URL: https://api.ailurus.dev
-- UPLOAD_BASE_URL: https://cdn.ailurus.dev
-- FRONTEND_URL: https://ailurus.dev
+- `API_HOST`: api.ailurus.dev
+- `API_BASE_URL`: https://api.ailurus.dev
+- `UPLOAD_BASE_URL`: https://cdn.ailurus.dev
+- `FRONTEND_URL`: https://ailurus.dev
 
 ---
 
-## 📋 **VISIÓN GENERAL**
+## 📋 VISIÓN GENERAL
 
 Documentación completa de endpoints REST del backend NestJS.
 
 **Características:**
-
 - ✅ Sin prefijo `/api` (endpoints directos)
 - ✅ Rate limiting aplicado globalmente
 - ✅ Validación de DTOs con `class-validator`
 - ✅ Respuestas estandarizadas con `TransformInterceptor`
 - ✅ CORS habilitado para `http://localhost:4321`
 
----
-
-## 🔧 **FORMATO DE RESPUESTA**
-
-### **Respuesta Exitosa**
-
-Structure includes:
-
-- success: true
-- data: (object containing response data)
-- timestamp: ISO 8601 datetime
-
-### **Respuesta de Error**
-
-Structure includes:
-
-- success: false
-- statusCode: HTTP status code
-- message: Error message or validation errors array
-- timestamp: ISO 8601 datetime
-- path: Request path
-- method: HTTP method
+**Arquitectura:**
+- 5 módulos NestJS: Documents, Folders, Categories, Search, Prisma
+- 21 endpoints implementados
+- SQLite 3 con FTS5 para búsqueda full-text
 
 ---
 
-## 📄 **DOCUMENTS ENDPOINTS**
+## 🔧 FORMATO DE RESPUESTA
 
-### **1. GET /docs**
+### Respuesta Exitosa
 
-Obtener todos los documentos publicados.
+```json
+{
+  "success": true,
+  "data": { },
+  "timestamp": "2025-11-21T19:00:00.000Z"
+}
+```
 
-#### **Request**
+### Respuesta de Error
 
-- Method: GET
-- Path: /docs
-- Host: ${API_HOST}
-
-#### **Response 200**
-
-Returns array of document objects with fields:
-
-- id: Document ID (number)
-- slug: URL-friendly identifier (string)
-- title: Document title (string)
-- content: Markdown content (string)
-- status: "published"
-- createdAt: ISO 8601 timestamp
-- updatedAt: ISO 8601 timestamp
-- createdBy: Creator identifier (string)
-
-#### **Notas**
-
-- Solo devuelve documentos con `status: "published"`
-- Ordenados por fecha de creación (más reciente primero)
-- Sin paginación en POC v0.1
+```json
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "Error message or validation errors array",
+  "timestamp": "2025-11-21T19:00:00.000Z",
+  "path": "/docs",
+  "method": "POST"
+}
+```
 
 ---
 
-### **2. GET /docs/:slug**
+## 📄 DOCUMENTS MODULE
 
-Obtener un documento específico por slug.
+**Implementación**: `backend/src/modules/documents/`
+- Controller: `documents.controller.ts`
+- Service: `documents.service.ts` (150 líneas)
+- DTOs: `dto/create-document.dto.ts`, `dto/update-document.dto.ts`
 
-#### **Request**
+### Endpoints Disponibles
 
-- Method: GET
-- Path: /docs/:slug
-- Host: ${API_HOST}
-- Parameters: slug (URL parameter)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/documents` | Listar documentos publicados |
+| GET | `/documents/:slug` | Obtener documento por slug |
+| GET | `/documents?category=:id` | Filtrar por categoría |
+| POST | `/documents` | Crear documento (draft) |
+| PUT | `/documents/:id/draft` | Actualizar draft (auto-save) |
+| PUT | `/documents/:id/publish` | Publicar documento |
+| DELETE | `/documents/:id` | Archivar documento (soft delete) |
 
-#### **Response 200**
+### Flujo de Request
 
-Returns single document object with fields:
+```mermaid
+sequenceDiagram
+    Cliente->>API: GET /documents/instalacion
+    API->>DocumentsController: @Get(':slug')
+    DocumentsController->>DocumentsService: findBySlug('instalacion')
+    DocumentsService->>PrismaService: findUnique({ where: { slug } })
+    PrismaService->>SQLite: SELECT * FROM documents WHERE slug = ?
+    SQLite-->>PrismaService: Document row
+    PrismaService-->>DocumentsService: Document entity
+    DocumentsService->>DocumentsService: Include category relation
+    DocumentsService-->>DocumentsController: Document + Category
+    DocumentsController-->>API: TransformInterceptor
+    API-->>Cliente: JSON response
+```
 
-- id: Document ID
-- slug: URL identifier
-- title: Document title
-- content: Full Markdown content
-- status: "published"
-- createdAt: Creation timestamp
-- updatedAt: Last update timestamp
-- createdBy: Creator identifier
+### Estructura de Datos
 
-#### **Response 404**
+```mermaid
+graph LR
+    subgraph "CreateDocumentDto"
+        R1[title: string]
+        R2[content: string]
+        R3[categoryId: string]
+        R4[path: string]
+        R5[createdBy: string]
+    end
+    
+    subgraph "DocumentResponse"
+        S1[id: number]
+        S2[slug: string auto-generated]
+        S3[title: string]
+        S4[content: string]
+        S5[category: Category]
+        S6[status: DRAFT/PUBLISHED/ARCHIVED]
+        S7[createdAt: DateTime]
+        S8[updatedAt: DateTime]
+        S9[createdBy: string]
+    end
+    
+    R1 --> S3
+    R2 --> S4
+    R3 --> S5
+```
 
-Error response with:
+### Manejo de Errores
 
-- statusCode: 404
-- message: "Document with slug '{slug}' not found"
+**400 Bad Request**
+- Datos inválidos (validación de class-validator)
+- Slug duplicado al crear documento
+- Contenido vacío al intentar publicar
 
-#### **Notas**
+**404 Not Found**
+- Documento no encontrado por slug o ID
+- Documento en estado draft/archived al buscar por slug
 
-- Solo devuelve documentos publicados
-- Documentos en draft o archivados retornan 404
-
----
-
-### **3. POST /docs**
-
-Crear un nuevo documento (en estado draft).
-
-#### **Request**
-
-- Method: POST
-- Path: /docs
-- Host: ${API_HOST}
-- Content-Type: application/json
-
-Request body structure:
-
-- title: Document title (string, required)
-- content: Markdown content (string, optional)
-- createdBy: Creator identifier (string, optional, defaults to "anonymous")
-
-#### **Validación**
-
-| Campo       | Tipo   | Requerido | Validación             |
-| ----------- | ------ | --------- | ---------------------- |
-| `title`     | string | ✅ Sí     | Max 200 caracteres     |
-| `content`   | string | ❌ No     | Max 100,000 caracteres |
-| `createdBy` | string | ❌ No     | Default: "anonymous"   |
-
-#### **Response 201**
-
-Returns created document object with:
-
-- id: New document ID
-- slug: Auto-generated from title
-- title: Document title
-- content: Markdown content
-- status: "draft"
-- createdAt: Creation timestamp
-- updatedAt: Update timestamp
-- createdBy: Creator identifier
-
-#### **Response 400 (Slug duplicado)**
-
-Error response:
-
-- statusCode: 400
-- message: "Document with slug '{slug}' already exists"
-
-#### **Response 400 (Validación)**
-
-Validation error response:
-
-- statusCode: 400
-- message: Array of validation error messages
-
-#### **Notas**
-
-- El slug se genera automáticamente desde el título
-- Slug normalizado: lowercase, sin acentos, guiones en lugar de espacios
-- Documento se crea en estado `draft`
+**500 Internal Server Error**
+- Error de base de datos
+- Error inesperado del servidor
 
 ---
 
-### **4. PUT /docs/:id/draft**
+## 🗂️ FOLDERS MODULE
 
-Guardar cambios en un draft (auto-save).
+**Implementación**: `backend/src/modules/folders/`
+- Controller: `folders.controller.ts`
+- Service: `folders.service.ts` (244 líneas)
+- DTOs: `dto/folder-node-response.dto.ts`
 
-#### **Request**
+### Endpoints Disponibles
 
-- Method: PUT
-- Path: /docs/:id/draft
-- Host: ${API_HOST}
-- Content-Type: application/json
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/folders` | Obtener árbol completo (recursivo) |
+| GET | `/folders/:path` | Obtener nodo por path con children |
+| POST | `/folders` | Crear folder (valida path único) |
+| PUT | `/folders/:id` | Actualizar folder |
+| DELETE | `/folders/:id` | Eliminar folder (valida sin children) |
 
-Request body structure:
+### Algoritmo BuildTree
 
-- title: Document title (string, required)
-- content: Markdown content (string, required)
+```mermaid
+flowchart TD
+    A[Obtener todos los folders de DB] --> B[Llamar buildTree parentId=null]
+    B --> C{Filtrar folders con parentId=null}
+    C --> D[Ordenar por campo order]
+    D --> E{Para cada folder raíz}
+    E --> F[Llamar buildTree recursivo con parentId=folder.id]
+    F --> G[Asignar children al folder]
+    G --> H{¿Más folders raíz?}
+    H -->|Sí| E
+    H -->|No| I[Retornar árbol completo]
+```
 
-#### **Validación**
+### Estructura de Datos
 
-| Campo     | Tipo   | Requerido | Validación             |
-| --------- | ------ | --------- | ---------------------- |
-| `title`   | string | ✅ Sí     | Max 200 caracteres     |
-| `content` | string | ✅ Sí     | Max 100,000 caracteres |
+```mermaid
+graph TD
+    subgraph "FolderNode Recursivo"
+        N1[id: string]
+        N2[name: string]
+        N3[type: folder/file]
+        N4[icon: emoji]
+        N5[path: string]
+        N6[order: number]
+        N7[slug?: string solo files]
+        N8[count?: number solo folders]
+        N9[children?: FolderNode array]
+    end
+    
+    N9 -.->|recursivo| N1
+```
 
-#### **Response 200**
-
-Returns updated document object with:
-
-- id: Document ID
-- slug: Unchanged slug
-- title: Updated title
-- content: Updated content
-- status: "draft" (unchanged)
-- createdAt: Original creation timestamp
-- updatedAt: New update timestamp
-- createdBy: Creator identifier
-
-#### **Response 404**
-
-Error response:
-
-- statusCode: 404
-- message: "Document with id {id} not found"
-
-#### **Notas**
-
-- Actualiza `updated_at` automáticamente
-- No cambia el slug ni el estado
-- Usado por auto-save del editor (cada 5 segundos)
-
----
-
-### **5. PUT /docs/:id/publish**
-
-Publicar un documento (cambiar de draft a published).
-
-#### **Request**
-
-- Method: PUT
-- Path: /docs/:id/publish
-- Host: ${API_HOST}
-
-#### **Response 200**
-
-Returns published document object with:
-
-- id: Document ID
-- slug: Document slug
-- title: Document title
-- content: Full content
-- status: "published" (updated)
-- createdAt: Creation timestamp
-- updatedAt: New update timestamp
-- createdBy: Creator identifier
-
-#### **Response 400 (Contenido vacío)**
-
-Error response:
-
-- statusCode: 400
-- message: "Cannot publish empty document"
-
-#### **Response 404**
-
-Error response:
-
-- statusCode: 404
-- message: "Document with id {id} not found"
-
-#### **Notas**
-
-- Solo se puede publicar si `content` no está vacío
-- Actualiza `status` a `published`
-- Actualiza `updated_at`
+**Características:**
+- Árbol jerárquico con recursividad ilimitada
+- 29 nodos totales: 9 folders + 20 files
+- Paths estilo Obsidian: `"Equipo/Proyecto/Getting Started/Instalación"`
 
 ---
 
-### **6. DELETE /docs/:id**
+## 📚 CATEGORIES MODULE
 
-Archivar un documento (soft delete).
+**Implementación**: `backend/src/modules/categories/`
+- Controller: `categories.controller.ts`
+- Service: `categories.service.ts` (~80 líneas)
 
-#### **Request**
+### Endpoints Disponibles
 
-- Method: DELETE
-- Path: /docs/:id
-- Host: ${API_HOST}
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/categories` | Listar 4 categorías fijas con stats |
+| GET | `/categories/:id` | Obtener categoría con estadísticas |
 
-#### **Response 204**
+### Categorías Fijas
 
-No content returned (successful deletion)
+```mermaid
+graph LR
+    C1[🚀 Getting Started<br/>getting-started]
+    C2[🏗️ Architecture<br/>architecture]
+    C3[📚 API Reference<br/>api-reference]
+    C4[📖 Guides<br/>guides]
+    
+    C1 -.->|documentCount| D1[CategoryStats]
+    C2 -.->|documentCount| D1
+    C3 -.->|documentCount| D1
+    C4 -.->|documentCount| D1
+```
 
-#### **Response 404**
-
-Error response:
-
-- statusCode: 404
-- message: "Document with id {id} not found"
-
-#### **Notas**
-
-- No elimina físicamente, cambia `status` a `archived`
-- Documentos archivados no aparecen en listados ni búsquedas
-- POC v0.1: No hay endpoint para restaurar (v0.5+)
-
----
-
-## 🗂️ **FOLDERS ENDPOINTS**
-
-### **7. GET /folders**
-
-Obtener árbol completo de carpetas jerárquicas.
-
-#### **Request**
-
-- Method: GET
-- Path: /folders
-- Host: ${API_HOST}
-
-#### **Response 200**
-
-Returns hierarchical tree structure with folder/file objects:
-
-**Folder object fields:**
-
-- id: Unique identifier
-- name: Folder name
-- type: "folder"
-- icon: Emoji icon
-- path: Full path (slash-separated)
-- order: Display order
-- parentId: Parent folder ID (null for root)
-- children: Array of nested folders/files
-
-**File object fields:**
-
-- id: Unique identifier
-- name: File name
-- type: "file"
-- icon: Emoji icon
-- path: Full path
-- order: Display order
-- parentId: Parent folder ID
-- slug: URL identifier (only for files)
-
-#### **Notas**
-
-- Devuelve árbol completo con recursividad ilimitada
-- `type: "folder"` para carpetas, `type: "file"` para documentos
-- `slug` solo presente en `type: "file"`
-- Ordenado por `order` field
-- Total: 29 nodos (9 folders + 20 files)
-
----
-
-### **8. GET /folders/:path**
-
-Obtener un nodo específico por path.
-
-#### **Request**
-
-- Method: GET
-- Path: /folders/:path (URL encoded)
-- Host: ${API_HOST}
-- Example: /folders/Equipo/Proyecto/Getting%20Started
-
-#### **Response 200**
-
-Returns folder object with:
-
-- id: Folder ID
-- name: Folder name
-- type: "folder"
-- icon: Emoji icon
-- path: Full path
-- order: Display order
-- parentId: Parent folder ID
-- children: Array of immediate children (1 level deep)
-
-Children include same fields, with files having additional "slug" field.
-
-#### **Response 404**
-
-Error response:
-
-- statusCode: 404
-- message: "Folder with path '{path}' not found"
-
-#### **Notas**
-
-- Path debe estar URL encoded
-- Devuelve nodo con sus children inmediatos (1 nivel)
-
----
-
-## 📚 **CATEGORIES ENDPOINTS**
-
-### **9. GET /categories**
-
-Obtener lista de 4 categorías fijas con estadísticas.
-
-#### **Request**
-
-- Method: GET
-- Path: /categories
-- Host: ${API_HOST}
-
-#### **Response 200**
-
-Returns array of category objects with:
-
-- id: Category identifier (string)
-- name: Display name
-- icon: Emoji icon
-- order: Display order
-- documentCount: Number of documents in category
-
-**Fixed categories (4 total):**
-
-1. getting-started (Getting Started, 🚀)
-2. architecture (Architecture, 🏗️)
-3. api-reference (API Reference, 📚)
-4. guides (Guides, 📖)
-
-#### **Notas**
-
+**Características:**
 - 4 categorías fijas (no se pueden crear más)
-- `documentCount` pre-calculado desde CategoryStats
-- Ordenadas por `order` field
+- `documentCount` pre-calculado desde tabla `CategoryStats`
+- Ordenadas por campo `order`
 
 ---
 
-### **10. GET /docs?category=:id**
+## 🔍 SEARCH MODULE
 
-Filtrar documentos por categoría.
+**Implementación**: `backend/src/modules/search/`
+- Controller: `search.controller.ts`
+- Service: `search.service.ts` (99 líneas)
 
-#### **Request**
+### Endpoints Disponibles
 
-- Method: GET
-- Path: /docs?category=:id
-- Host: ${API_HOST}
-- Query parameter: category (category ID)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/search?q=:query&limit=:limit&offset=:offset` | Búsqueda FTS5 con ranking |
 
-#### **Response 200**
+### Flujo de Búsqueda FTS5
 
-Returns array of document objects with:
+```mermaid
+flowchart TD
+    A[Query de usuario] --> B[Sanitizar query<br/>remover caracteres especiales]
+    B --> C{¿Query válido?<br/>min 2 caracteres}
+    C -->|No| D[Retornar array vacío]
+    C -->|Sí| E[FTS5 MATCH en documents_fts]
+    E --> F[JOIN con tabla documents]
+    F --> G[Filtrar status=PUBLISHED]
+    G --> H[Ordenar por rank descendente]
+    H --> I[Aplicar LIMIT/OFFSET<br/>paginación]
+    I --> J[Retornar resultados]
+    J --> K[Registrar en ActivityLog]
+```
 
-- id: Document ID
-- slug: URL identifier
-- title: Document title
-- content: Full Markdown content
-- category: Category ID (v0.5+)
-- subcategory: Subcategory name (v0.5+)
-- path: Folder path (v0.5+)
-- excerpt: Preview text (v0.5+)
-- status: "published"
-- createdAt: Creation timestamp
-- updatedAt: Update timestamp
-- createdBy: Creator identifier
+### Estructura de Datos
 
-#### **Notas**
+```mermaid
+graph LR
+    subgraph "SearchQuery"
+        Q1[q: string min 2 chars]
+        Q2[limit: number default 10]
+        Q3[offset: number default 0]
+    end
+    
+    subgraph "SearchResult"
+        R1[id: number]
+        R2[slug: string]
+        R3[title: string]
+        R4[excerpt: string con highlight]
+        R5[categoryId: string]
+        R6[path: string]
+        R7[rank: number relevancia]
+    end
+```
 
-- `category` field agregado en v0.5 (antes no existía)
-- `subcategory` y `path` también son nuevos campos
-- `excerpt` para preview en cards
-
----
-
-## 🔍 **SEARCH ENDPOINTS**
-
-### **11. GET /search**
-
-Búsqueda full-text en documentos.
-
-#### **Request**
-
-- Method: GET
-- Path: /search
-- Host: ${API_HOST}
-- Query parameters:
-  - q: Search term (required)
-  - limit: Results per page (optional)
-
-#### **Query Parameters**
-
-| Parámetro | Tipo   | Requerido | Descripción                                   |
-| --------- | ------ | --------- | --------------------------------------------- |
-| `q`       | string | ✅ Sí     | Término de búsqueda (min 2 caracteres)        |
-| `limit`   | number | ❌ No     | Resultados por página (default: 20, max: 100) |
-
-#### **Response 200**
-
-Returns array of search result objects with:
-
-- id: Document ID
-- slug: URL identifier
-- title: Document title
-- excerpt: Text fragment with highlighted search term
-- rank: Relevance score (0.0 to 1.0)
-- updatedAt: Last update timestamp
-
-#### **Response 200 (Sin resultados)**
-
-Returns empty data array when no matches found.
-
-#### **Response 400 (Query inválido)**
-
-Error response:
-
-- statusCode: 400
-- message: "Search query must be at least 2 characters"
-
-#### **Notas**
-
-- Usa SQLite FTS5 para búsqueda full-text
-- Solo busca en documentos publicados
-- Búsquedas sin resultados se registran en `search_logs`
-- `rank` indica relevancia (0.0 - 1.0)
-- `excerpt` contiene fragmento con palabra clave resaltada
+**Características:**
+- SQLite FTS5 con tokenizer unicode61
+- Sanitización de queries para prevenir errores FTS5
+- Ranking por relevancia (campo `rank`)
+- Solo busca en documentos PUBLISHED
+- Logging de búsquedas en `ActivityLog`
 
 ---
 
-## 📤 **UPLOAD ENDPOINTS**
+## 📊 ARQUITECTURA DE MÓDULOS
 
-### **12. POST /upload/image**
-
-Subir una imagen y obtener URL optimizada.
-
-#### **Request**
-
-- Method: POST
-- Path: /upload/image
-- Host: ${API_HOST}
-- Content-Type: multipart/form-data
-
-Form data field:
-
-- image: File upload (binary data)
-
-#### **Validación**
-
-| Campo   | Tipo | Validación                              |
-| ------- | ---- | --------------------------------------- |
-| `image` | file | Max 5MB, formatos: jpeg, png, gif, webp |
-
-#### **Response 200**
-
-Returns uploaded image data:
-
-- url: Optimized image URL (WebP format)
-- originalUrl: Original format URL (fallback)
-- width: Image width in pixels
-- height: Image height in pixels
-- size: File size in bytes
-- format: Output format ("webp")
-
-#### **Response 400 (Archivo muy grande)**
-
-Error response:
-
-- statusCode: 400
-- message: "File size exceeds 5MB limit"
-
-#### **Response 400 (Formato inválido)**
-
-Error response:
-
-- statusCode: 400
-- message: "Invalid file format. Allowed: jpeg, png, gif, webp"
-
-#### **Notas**
-
-- Optimiza automáticamente a WebP (85% calidad)
-- Mantiene original como fallback
-- Nombres con timestamp para evitar conflictos
-- Redimensiona si excede 2000x2000px
+```mermaid
+graph TB
+    subgraph "API Layer - Controllers"
+        DC[DocumentsController<br/>7 endpoints]
+        FC[FoldersController<br/>5 endpoints]
+        CC[CategoriesController<br/>2 endpoints]
+        SC[SearchController<br/>1 endpoint]
+    end
+    
+    subgraph "Service Layer - Business Logic"
+        DS[DocumentsService<br/>150 líneas]
+        FS[FoldersService<br/>244 líneas]
+        CS[CategoriesService<br/>80 líneas]
+        SS[SearchService<br/>99 líneas]
+    end
+    
+    subgraph "Data Layer"
+        PS[PrismaService<br/>ORM]
+        DB[(SQLite 3<br/>7 tablas en 3NF)]
+    end
+    
+    DC --> DS
+    FC --> FS
+    CC --> CS
+    SC --> SS
+    
+    DS --> PS
+    FS --> PS
+    CS --> PS
+    SS --> PS
+    
+    PS --> DB
+```
 
 ---
 
-## 📊 **ANALYTICS ENDPOINTS**
+## ⚡ RATE LIMITING
 
-### **13. POST /analytics/track**
+### Límites Globales
 
-Registrar evento de analytics.
+| Ventana | Límite | Descripción |
+|---------|--------|-------------|
+| 1 segundo | 10 requests | Burst protection |
+| 10 segundos | 50 requests | Uso normal |
+| 1 minuto | 100 requests | Límite general |
 
-#### **Request**
-
-- Method: POST
-- Path: /analytics/track
-- Host: ${API_HOST}
-- Content-Type: application/json
-
-Request body structure:
-
-- eventType: Event type string (required, see allowed values below)
-- metadata: Object with event-specific data (optional)
-
-#### **Validación**
-
-| Campo       | Tipo   | Requerido | Validación                                            |
-| ----------- | ------ | --------- | ----------------------------------------------------- |
-| `eventType` | string | ✅ Sí     | Valores: `page_view`, `search_query`, `document_edit` |
-| `metadata`  | object | ❌ No     | JSON válido                                           |
-
-#### **Response 204**
-
-No content returned (successful tracking)
-
-#### **Response 400**
-
-Error response:
-
-- statusCode: 400
-- message: "Invalid event type"
-
-#### **Notas**
-
-- Eventos disponibles en POC:
-  - `page_view`: Vista de página
-  - `search_query`: Búsqueda realizada
-  - `document_edit`: Documento editado
-- v0.5+: Dashboard para visualizar analytics
+**Response 429 (Too Many Requests)**
+```json
+{
+  "statusCode": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
 
 ---
 
-## 🌐 **WEBSOCKET EVENTS**
+## 🔐 AUTENTICACIÓN
 
-### **Namespace: /presence**
+**POC v0.1**: Sin autenticación, endpoints públicos
 
-#### **Event: editing-start**
-
-Cliente notifica que comenzó a editar.
-
-**Client → Server payload:**
-
-- documentId: Document ID (number)
-- userId: User identifier (string)
-- username: Display name (string)
-
-**Server → Other Clients payload:**
-
-- userId: User identifier
-- username: Display name
-- documentId: Document ID
+**v0.5+**: JWT authentication con header `Authorization: Bearer {token}`
 
 ---
 
-#### **Event: editing-stop**
+## 📝 EJEMPLOS DE FLUJOS
 
-Cliente notifica que dejó de editar.
+### Flujo: Crear y Publicar Documento
 
-**Client → Server payload:**
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant F as Frontend
+    participant A as API
+    participant D as DB
+    
+    U->>F: Clic en "Nuevo Documento"
+    F->>A: POST /documents {title, content}
+    A->>D: INSERT con status=DRAFT
+    D-->>A: Document {id, slug, status=DRAFT}
+    A-->>F: Response 201
+    F-->>U: Mostrar editor
+    
+    loop Auto-save cada 5s
+        U->>F: Editar contenido
+        F->>A: PUT /documents/:id/draft
+        A->>D: UPDATE content
+        D-->>A: Updated document
+        A-->>F: Response 200
+    end
+    
+    U->>F: Clic en "Publicar"
+    F->>A: PUT /documents/:id/publish
+    A->>D: UPDATE status=PUBLISHED
+    D-->>A: Published document
+    A-->>F: Response 200
+    F-->>U: Redirigir a /docs/:slug
+```
 
-- Empty object
+### Flujo: Búsqueda
 
-**Server → Other Clients payload:**
-
-- userId: User identifier
-- username: Display name
-- documentId: Document ID
-
----
-
-#### **Event: get-active-users**
-
-Cliente solicita usuarios activos en documento.
-
-**Client → Server payload:**
-
-- documentId: Document ID (number)
-
-**Server → Client payload:**
-
-- users: Array of active user objects
-  - userId: User identifier
-  - username: Display name
-  - documentId: Document ID
-  - connectedAt: Connection timestamp
-
----
-
-#### **Event: user-left**
-
-Usuario desconectado (automático).
-
-**Server → All Clients payload:**
-
-- userId: User identifier
-- username: Display name
-- documentId: Document ID
-
----
-
-## ⚡ **RATE LIMITING**
-
-### **Límites Globales**
-
-| Ventana     | Límite       | Descripción      |
-| ----------- | ------------ | ---------------- |
-| 1 segundo   | 10 requests  | Burst protection |
-| 10 segundos | 50 requests  | Uso normal       |
-| 1 minuto    | 100 requests | Límite general   |
-
-### **Response 429 (Too Many Requests)**
-
-Error response:
-
-- statusCode: 429
-- message: "Too many requests. Please try again later."
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant F as Frontend
+    participant A as API
+    participant FTS as FTS5 Engine
+    participant D as DB
+    
+    U->>F: Escribir "instalación"
+    F->>A: GET /search?q=instalación
+    A->>A: Sanitizar query
+    A->>FTS: MATCH documents_fts
+    FTS->>D: SELECT con ranking
+    D-->>FTS: Resultados ordenados
+    FTS-->>A: Documents con rank
+    A->>D: INSERT ActivityLog
+    A-->>F: SearchResults[]
+    F-->>U: Mostrar resultados
+```
 
 ---
 
-## 🔐 **AUTENTICACIÓN (v0.5+)**
+## 📚 REFERENCIAS
 
-POC v0.1 no tiene autenticación. Endpoints son públicos.
+- **Implementación completa**: `backend/src/modules/`
+- **Schema Prisma**: `backend/prisma/schema.prisma`
+- **DTOs**: `backend/src/modules/*/dto/`
+- **Tests**: `backend/src/modules/*/*.spec.ts`
 
-**v0.5:** JWT authentication with Authorization header:
-
-- Format: Bearer {token}
-
----
-
-## 📝 **EJEMPLOS DE USO**
-
-### **Flujo: Crear y Publicar Documento**
-
-1. **Crear draft**: POST to /docs with title, content, and createdBy
-
-   - Response includes new document ID with status "draft"
-
-2. **Guardar cambios (auto-save)**: PUT to /docs/{id}/draft with updated title and content
-
-   - Updates document without changing status
-
-3. **Publicar**: PUT to /docs/{id}/publish
-
-   - Changes status from "draft" to "published"
-
-4. **Ver publicado**: GET /docs/{slug}
-   - Retrieves published document by slug
-
-### **Flujo: Búsqueda**
-
-- GET request to /search with query parameter q
-- Returns array of matching documents with relevance ranking
-
-### **Flujo: Upload de Imagen**
-
-- POST multipart/form-data to /upload/image with image file
-- Returns optimized WebP URL and original format URL
-
----
-
-**Siguiente:** Ver [Backend Architecture](./BACKEND_ARCHITECTURE.md) para implementación completa.
+**Siguiente**: Ver [Backend Architecture](./BACKEND_ARCHITECTURE.md) para detalles de implementación.

@@ -1,428 +1,483 @@
 # 🎨 Frontend Architecture - Astro + React
 
-**Framework**: Astro 4.x + React 18  
-**Fecha**: 20 de noviembre, 2025  
-**Versión**: v0.5
+**Framework**: Astro 5.15.9 + React 19.2.0  
+**Versión**: v0.5  
+**Última actualización**: Noviembre 2025
 
 ---
 
-## 📋 Visión General
+## 📋 VISIÓN GENERAL
 
-Aplicación de documentación renderizada por servidor (SSR) con Astro, optimizada para SEO y performance. Consume API REST de NestJS para contenido dinámico.
+Aplicación de documentación renderizada por servidor (SSR) con Astro, optimizada para SEO y performance. Utiliza Islands Architecture para interactividad selectiva con React.
 
-### Stack
+### Stack Tecnológico
 
-- **Framework**: Astro 4.x (SSR)
-- **UI Library**: React 18 (islands)
+- **Framework**: Astro 5.15.9 (SSR)
+- **UI Library**: React 19.2.0 (islands)
 - **Styling**: Tailwind CSS + shadcn/ui
-- **State**: Nanostores
+- **State**: Nanostores 0.11.3
+- **Markdown**: marked.js + Shiki
 - **TypeScript**: 5.x
 
-### Características
+### Características Principales
 
 - 🚀 SSR para carga inicial rápida y SEO
 - 🏝️ Islands Architecture para interactividad selectiva
-- 🗂️ **Navegación jerárquica** con SidebarItem recursivo
+- 🗂️ Navegación jerárquica recursiva (Obsidian-style)
 - 📝 Editor Markdown con auto-save
 - 🔍 Búsqueda en tiempo real
-- 🖼️ **ImageLightbox** con shadcn Dialog
+- 🖼️ Sistema de imágenes con lightbox
 - 🎨 Dark mode con persistencia
-- ♿ **Accesibilidad WCAG 2.2 AA**
+- ♿ Accesibilidad WCAG 2.2 AA
 - 📱 Responsive design mobile-first
 
 ---
 
-## 📋 **FILOSOFÍA DE ARQUITECTURA**
+## 🗂️ ESTRUCTURA DE CARPETAS
 
-### **Feature-Based Organization**
-
-Cada **feature** agrupa componentes, lógica y estilos relacionados en una estructura que incluye components/ (componentes del feature), services/ (lógica de negocio), stores/ (estado con Nanostores), types/ (tipos TypeScript), y utils/ (utilidades específicas).
-
-### **Extensiones por Uso**
-
-| Extensión     | Propósito                      | Ejemplos               |
-| ------------- | ------------------------------ | ---------------------- |
-| `.astro`      | Componentes SSR/estáticos      | `DocumentPage.astro`   |
-| `.tsx`        | Componentes React interactivos | `SimpleMDEditor.tsx`   |
-| `.service.ts` | Lógica de negocio/API          | `documents.service.ts` |
-| `.store.ts`   | Estado global (Nanostores)     | `editor.store.ts`      |
-| `.type.ts`    | Tipos TypeScript               | `document.type.ts`     |
-| `.util.ts`    | Utilidades puras               | `slug.util.ts`         |
-| `.css`        | Estilos                        | `editor.css`           |
-
----
-
-## 🗂️ **ESTRUCTURA DE CARPETAS**
+**Implementación**: `frontend/src/`
 
 ```
-docs-frontend/
-├── src/
-│   ├── documents/                      # Feature: Documentación
-│   │   ├── components/
-│   │   │   ├── DocumentViewer.astro    # Vista de documento
-│   │   │   ├── DocumentList.astro      # Lista de docs
-│   │   │   └── DocumentMeta.astro      # Metadata
-│   │   ├── pages/
-│   │   │   ├── [...slug].astro         # /docs/[slug]
-│   │   │   └── index.astro             # /docs
-│   │   ├── services/
-│   │   │   └── documents.service.ts    # API calls
-│   │   └── types/
-│   │       └── document.type.ts        # Tipos
-│   │
-│   ├── editor/                         # Feature: Editor
-│   │   ├── components/
-│   │   │   ├── SimpleMDEditor.tsx      # Editor principal
-│   │   │   ├── EditorToolbar.tsx       # Toolbar
-│   │   │   ├── EditorPreview.tsx       # Preview
-│   │   │   ├── ImageUploader.tsx       # Upload images
-│   │   │   └── PresenceIndicator.tsx   # Usuarios editando
-│   │   ├── services/
-│   │   │   ├── editor.service.ts       # Auto-save, publish
-│   │   │   └── presence.service.ts     # WebSocket presence
-│   │   ├── stores/
-│   │   │   └── editor.store.ts         # Estado editor
-│   │   ├── types/
-│   │   │   └── editor.type.ts
-│   │   └── utils/
-│   │       └── editor.util.ts          # Helpers
-│   │
-│   ├── search/                         # Feature: Búsqueda
-│   │   ├── components/
-│   │   │   ├── SearchBar.tsx           # Barra de búsqueda
-│   │   │   ├── SearchResults.tsx       # Lista resultados
-│   │   │   ├── SearchFilters.tsx       # Filtros
-│   │   │   └── SearchHighlight.tsx     # Highlight matches
-│   │   ├── pages/
-│   │   │   └── search.astro            # /search
-│   │   ├── services/
-│   │   │   └── search.service.ts       # API búsqueda
-│   │   ├── stores/
-│   │   │   └── search.store.ts         # Estado búsqueda
-│   │   └── types/
-│   │       └── search.type.ts
-│   │
-│   ├── markdown/                       # Feature: Renderizado Markdown
-│   │   ├── components/
-│   │   │   ├── MarkdownRenderer.astro  # Renderizador
-│   │   │   ├── CodeBlock.astro         # Code blocks
-│   │   │   ├── MermaidDiagram.tsx      # Diagramas
-│   │   │   └── CopyButton.tsx          # Copy code
-│   │   ├── services/
-│   │   │   └── markdown.service.ts     # Parser + syntax highlight
-│   │   └── styles/
-│   │       └── markdown.css            # Estilos contenido
-│   │
-│   ├── shared/                         # Código compartido
-│   │   ├── components/
-│   │   │   ├── ui/
-│   │   │   │   ├── Button.astro
-│   │   │   │   ├── Card.astro
-│   │   │   │   ├── Modal.tsx
-│   │   │   │   ├── Tabs.tsx
-│   │   │   │   └── Toast.tsx
-│   │   │   └── layout/
-│   │   │       ├── Sidebar.astro
-│   │   │       ├── TOC.astro
-│   │   │       ├── Header.astro
-│   │   │       └── Footer.astro
-│   │   ├── services/
-│   │   │   ├── api.service.ts          # HTTP client base
-│   │   │   ├── websocket.service.ts    # WebSocket client
-│   │   │   └── storage.service.ts      # LocalStorage wrapper
-│   │   ├── stores/
-│   │   │   ├── theme.store.ts          # Dark mode
-│   │   │   └── user.store.ts           # Usuario actual
-│   │   ├── types/
-│   │   │   ├── api.type.ts             # Tipos API
-│   │   │   └── common.type.ts          # Tipos comunes
-│   │   ├── utils/
-│   │   │   ├── date.util.ts
-│   │   │   ├── string.util.ts
-│   │   │   ├── slug.util.ts
-│   │   │   └── validation.util.ts
-│   │   └── hooks/                      # React hooks
-│   │       ├── useDebounce.ts
-│   │       ├── useLocalStorage.ts
-│   │       └── useWebSocket.ts
-│   │
-│   ├── layouts/                        # Layouts globales
-│   │   ├── BaseLayout.astro            # Base HTML
-│   │   ├── DocsLayout.astro            # Layout docs
-│   │   └── EditorLayout.astro          # Layout editor
-│   │
-│   ├── pages/                          # Rutas raíz
-│   │   └── index.astro                 # Homepage
-│   │
-│   └── styles/                         # Estilos globales
-│       ├── global.css
-│       ├── themes/
-│       │   ├── light.css
-│       │   └── dark.css
-│       └── tokens.css                  # Design tokens
-│
-├── public/
-│   ├── fonts/
-│   ├── icons/
-│   └── favicon.svg
-│
-├── astro.config.mjs
-├── tailwind.config.mjs
-├── tsconfig.json
-├── package.json
-└── README.md
+src/
+├── components/ui/     # 15 shadcn/ui components
+├── documents/         # DocumentList, NewDocumentForm
+├── editor/            # MarkdownEditor
+├── layouts/           # Layout, DocsLayout, EditorLayout
+├── markdown/          # MarkdownRenderer, ImageLightbox
+├── mocks/             # documents.mock.ts, folders.mock.ts
+├── pages/             # 18 páginas Astro
+├── search/            # SearchBar, SearchResults
+├── services/          # API services
+├── shared/            # components, stores, types, utils
+├── styles/            # CSS global
+└── lib/               # Utilities
 ```
 
----
-
-## 🔧 **CONFIGURACIÓN TÉCNICA**
-
-### **astro.config.mjs**
-
-Configuración de Astro con output server (SSR habilitado), adapter Node.js para deployment, integrations React y Tailwind CSS, configuración Vite SSR para nanostores y socket.io-client como externos, y servidor en puerto 4321.
-
-### **package.json (Dependencias principales)**
-
-**Dependencias principales**:
-
-- Astro 4.0.0 + React 18.2.0 + Tailwind 5.0.0
-- SimpleMDE 1.11.2, Marked 11.0.0, Shiki 1.0.0, Mermaid 10.6.0 (editor/rendering)
-- Socket.io-client 4.7.0 (WebSockets)
-- Nanostores 0.10.0 (state management)
-- Axios 1.6.0, date-fns 3.0.0 (utilidades)
-
-**DevDependencies**:
-
-- TypeScript 5.3.0, Tailwind CSS 3.4.0
-- Prettier 3.1.0 con plugin Astro
+**Totales**:
+- 22 componentes React (.tsx)
+- 18 páginas Astro (.astro)
+- 12 carpetas principales
+- 15 componentes shadcn/ui instalados
 
 ---
 
----
+## 🏗️ ISLANDS ARCHITECTURE
 
-## 📦 **FEATURES**
+```mermaid
+graph TD
+    A[Astro Page SSR] --> B[Static HTML]
+    A --> C[React Island 1: SearchBar]
+    A --> D[React Island 2: SidebarItem]
+    A --> E[React Island 3: ThemeToggle]
+    A --> F[React Island 4: ImageLightbox]
+    
+    B --> G[Browser]
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+    
+    C -.->|Nanostores| H[search.store.ts]
+    D -.->|Nanostores| I[folder-tree.store.ts]
+    E -.->|Nanostores| J[theme.store.ts]
+```
 
-### **1. Documents Feature** (`documents/`)
-
-#### **documents/services/documents.service.ts**
-
-Service for document API operations including getDocument (fetch by slug), getDocuments (fetch all), and getDocumentsByCategory (filter by category).
-
-#### **documents/types/document.type.ts**
-
-TypeScript interfaces: Document (id, slug, title, content, status, dates, createdBy) and DocumentListItem (slug, title, optional excerpt/category, updatedAt).
-
-#### **documents/pages/[...slug].astro**
-
-Dynamic route page that fetches document by slug, handles 404 redirects, and renders DocsLayout with Sidebar, DocumentViewer, and TOC components.
-
-#### **documents/components/DocumentViewer.astro**
-
-Component that renders a document article with header (title and metadata) and content area using MarkdownRenderer.
-
----
-
-### **2. Editor Feature** (`editor/`)
-
-#### **editor/stores/editor.store.ts**
-
-Nanostores state management for editor with EditorState interface and helper functions for editing status, saving state, last saved timestamp, unsaved changes tracking, and collaborative user presence management.
-
-#### **editor/services/editor.service.ts**
-
-Editor service with saveDraft (auto-save content), publishDocument (publish draft), and uploadImage (upload images with FormData) methods.
-
-#### **editor/components/SimpleMDEditor.tsx**
-
-React component that initializes SimpleMDE markdown editor with toolbar configuration, WebSocket presence connection, auto-save on change (5 second debounce), and publish functionality with save status indicators.
-
-#### **editor/components/PresenceIndicator.tsx**
-
-Component that displays collaborative editing status showing which users are currently editing the document.
-
-#### **editor/services/presence.service.ts**
-
-WebSocket service for real-time collaborative editing presence that emits editing-start events and listens for user-editing, user-stopped-editing, and user-left events.
+**Concepto**: Astro renderiza HTML estático en el servidor. Solo los componentes que requieren interactividad (islands) se hidratan como React en el cliente, reduciendo el JavaScript enviado al navegador.
 
 ---
 
-### **3. Search Feature** (`search/`)
+## 📦 COMPONENTES PRINCIPALES
 
-#### **search/stores/search.store.ts**
+### Tabla de Componentes shadcn/ui (15 instalados)
 
-Nanostores state for search feature managing query string, results array, searching status, and search history flag with helper functions.
+| Componente | Ubicación | Uso Principal |
+|------------|-----------|---------------|
+| Badge | `components/ui/badge.tsx` | Etiquetas de categorías |
+| Button | `components/ui/button.tsx` | Acciones principales |
+| Card | `components/ui/card.tsx` | Cards de documentos |
+| Dialog | `components/ui/dialog.tsx` | Modales (lightbox, forms) |
+| Dropdown Menu | `components/ui/dropdown-menu.tsx` | Menús contextuales |
+| Input | `components/ui/input.tsx` | Campos de formulario |
+| Label | `components/ui/label.tsx` | Labels accesibles |
+| Select | `components/ui/select.tsx` | Selectores |
+| Separator | `components/ui/separator.tsx` | Separadores visuales |
+| Skeleton | `components/ui/skeleton.tsx` | Loading states |
+| Tabs | `components/ui/tabs.tsx` | Pestañas |
+| Textarea | `components/ui/textarea.tsx` | Editor de texto |
+| Toast | `components/ui/toast.tsx` | Notificaciones |
+| Toaster | `components/ui/toaster.tsx` | Contenedor de toasts |
+| Tooltip | `components/ui/tooltip.tsx` | Tooltips informativos |
 
-#### **search/services/search.service.ts**
+### Tabla de Componentes Custom
 
-Search service that queries the API with search parameters, handles empty queries, and updates the search store with results.
-
-#### **search/components/SearchBar.tsx**
-
-Search input component with debounced search (300ms), loading indicator, and real-time search as user types.
+| Componente | Archivo | Líneas | Descripción |
+|------------|---------|--------|-------------|
+| SidebarItem | `shared/components/layout/SidebarItem.tsx` | 174 | Navegación recursiva |
+| ImageLightbox | `markdown/components/ImageLightbox.tsx` | ~100 | Modal de imágenes |
+| MarkdownEditor | `editor/components/MarkdownEditor.tsx` | ~150 | Editor con preview |
+| SearchBar | `search/components/SearchBar.tsx` | ~80 | Búsqueda en tiempo real |
+| SearchResults | `search/components/SearchResults.tsx` | ~120 | Lista de resultados |
+| ThemeToggle | `shared/components/layout/ThemeToggle.tsx` | ~60 | Toggle dark mode |
 
 ---
 
-## 🎨 **SISTEMA DE DISEÑO**
+## 🗂️ NAVEGACIÓN JERÁRQUICA
 
-### **Colores (CSS Variables)**
+### Componente: SidebarItem.tsx
 
-CSS custom properties define light and dark themes with variables for primary/secondary backgrounds, text colors, accent color, borders, and code block backgrounds.
-
-### **Componentes Principales Actualizados**
-
-#### **SidebarItem.tsx - Navegación Recursiva** ✨ NUEVO
-
-Componente React recursivo para renderizar árbol de carpetas con expansión/colapso ilimitado.
+**Implementación**: `frontend/src/shared/components/layout/SidebarItem.tsx` (174 líneas)
 
 **Características**:
-
 - Renderizado recursivo de niveles ilimitados
-- Estado de expansión persistente (nanostores)
+- Gestión de estado de expansión con Nanostores
+- Soporte completo de teclado (Enter, Space, flechas)
+- Etiquetas ARIA para accesibilidad
 - Iconos emoji para categorías
-- Links a documentos con slug
+- Indicador de conteo de children
 
-**Interface**: FolderNode with id, name, type (folder/file), optional icon, path, order, optional children array, and optional slug for files.
+### Flujo de Renderizado Recursivo
 
-**Implementación**: Recursive React component that renders folders with expand/collapse buttons and files as links, with dynamic indentation based on nesting level.
+```mermaid
+flowchart TD
+    A[SidebarItem recibe node] --> B{¿Tipo de nodo?}
+    B -->|folder| C[Renderizar botón con chevron]
+    B -->|file| D[Renderizar link a documento]
+    
+    C --> E{¿Tiene children?}
+    E -->|Sí| F{¿Está expandido?}
+    E -->|No| Z[Fin]
+    
+    F -->|Sí| G[Mapear children]
+    F -->|No| Z
+    
+    G --> H[Para cada child]
+    H --> I[Renderizar SidebarItem recursivo]
+    I --> J{¿Más children?}
+    J -->|Sí| H
+    J -->|No| Z
+    
+    D --> Z
+```
 
-**Store**: Nanostores atom managing Set of expanded folder IDs with toggleFolder function to add/remove folders from expanded state.
+### Store: folder-tree.store.ts
+
+**Implementación**: `frontend/src/shared/stores/folder-tree.store.ts`
+
+```mermaid
+graph LR
+    subgraph "Nanostores Atom"
+        S1[expandedFolders: Record string boolean]
+    end
+    
+    subgraph "Actions"
+        A1[toggleFolder path]
+        A2[expandFolder path]
+        A3[collapseFolder path]
+    end
+    
+    A1 --> S1
+    A2 --> S1
+    A3 --> S1
+    
+    S1 -.->|reactivo| C[SidebarItem components]
+```
+
+**Funcionalidad**: Gestiona qué folders están expandidos usando un objeto con paths como keys y booleanos como values. Persiste en memoria durante la sesión.
 
 ---
 
-#### **ImageLightbox.tsx - Modal de Imágenes** ✨ NUEVO
+## 🖼️ SISTEMA DE IMÁGENES
 
-Modal para imágenes con accesibilidad WCAG 2.2 AA usando shadcn Dialog.
+### Componente: ImageLightbox
+
+**Implementación**: `frontend/src/markdown/components/ImageLightbox.tsx`
 
 **Características**:
-
+- Modal con shadcn Dialog
 - Lazy loading de imágenes
-- Captions opcionales
+- Captions opcionales (desde atributo `title`)
 - Keyboard navigation (Escape para cerrar)
 - Focus trap automático
-- Bridge vanilla→React (ImageLightboxController)
+- Bridge vanilla→React para integración con markdown
 
-**Implementación**: React component using shadcn Dialog for image lightbox with lazy loading, optional captions, and accessible modal behavior.
+### Flujo de Interacción
 
-**Bridge vanilla→React**: Controller component that listens for clicks on markdown images and opens the lightbox with image data (src, alt, caption from title attribute).
-
----
-
-#### **shadcn/ui Components** ✨ NUEVO
-
-13+ componentes instalados y customizados con Tailwind.
-
-**Lista de componentes**:
-
-| Componente    | Ubicación                         | Uso                                |
-| ------------- | --------------------------------- | ---------------------------------- |
-| Badge         | `src/components/ui/badge`         | Etiquetas de categorías            |
-| Button        | `src/components/ui/button`        | Acciones (crear, editar, eliminar) |
-| Card          | `src/components/ui/card`          | Cards de documentos                |
-| Dialog        | `src/components/ui/dialog`        | Modales (nuevo doc, lightbox)      |
-| Dropdown Menu | `src/components/ui/dropdown-menu` | Menús contextuales                 |
-| Input         | `src/components/ui/input`         | Campos de formulario               |
-| Label         | `src/components/ui/label`         | Labels accesibles                  |
-| Select        | `src/components/ui/select`        | Selectores (categoría, estado)     |
-| Separator     | `src/components/ui/separator`     | Separadores visuales               |
-| Skeleton      | `src/components/ui/skeleton`      | Loading states                     |
-| Tabs          | `src/components/ui/tabs`          | Pestañas de navegación             |
-| Textarea      | `src/components/ui/textarea`      | Editor de texto                    |
-| Tooltip       | `src/components/ui/tooltip`       | Tooltips informativos              |
-
-**Ejemplo de uso**: Example NewDocumentForm component demonstrating Dialog trigger with Button and form content inside DialogContent.
-
-**Temas**: CSS variables for light and dark mode themes using HSL color space for background, foreground, primary, and primary-foreground colors.
-
-Ver más en [docs/DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant M as Markdown HTML
+    participant B as Bridge Controller
+    participant L as ImageLightbox React
+    participant D as shadcn Dialog
+    
+    U->>M: Clic en imagen
+    M->>B: Event listener detecta clic
+    B->>B: Extraer src, alt, title
+    B->>L: Actualizar estado con datos
+    L->>D: Abrir modal
+    D-->>U: Mostrar imagen ampliada
+    
+    U->>D: Presionar Escape
+    D->>L: Cerrar modal
+    L-->>U: Volver a documento
+```
 
 ---
 
-### \*\*Componentes UI Base (Legados)
+## 🔍 BÚSQUEDA
 
-## 🔷 **SHARED LAYER**
+### Componentes
 
-### **shared/services/api.service.ts**
+**SearchBar.tsx**: Input con debounce de 300ms
+**SearchResults.tsx**: Lista de resultados con highlights
 
-Axios-based HTTP client service with base URL configuration, 10-second timeout, request/response interceptors for auth and error handling, and wrapper methods for GET, POST, PUT, DELETE.`
+### Flujo de Búsqueda
 
-### **shared/services/websocket.service.ts**
+```mermaid
+flowchart TD
+    A[Usuario escribe en SearchBar] --> B[Debounce 300ms]
+    B --> C{¿Query válido?<br/>min 2 caracteres}
+    C -->|No| D[No hacer nada]
+    C -->|Sí| E[Actualizar search.store]
+    E --> F[search.service.ts]
+    F --> G[GET /search?q=query]
+    G --> H[API retorna resultados]
+    H --> I[Actualizar search.store con results]
+    I --> J[SearchResults re-renderiza]
+    J --> K[Mostrar resultados con highlights]
+```
 
-Socket.io client service with namespace support, automatic reconnection (5 attempts with 1-second delay), connection lifecycle logging, and disconnect management.
+### Store: search.store.ts
 
-### **shared/services/storage.service.ts**
+**Implementación**: `frontend/src/shared/stores/search.store.ts`
 
-LocalStorage wrapper with type-safe get/set methods, JSON serialization, error handling, and remove/clear operations.
-
-### **shared/stores/theme.store.ts**
-
-Theme management store with Nanostores that persists theme preference to localStorage and updates DOM data-theme attribute, with toggleTheme and setTheme helper functions.
-
-### **shared/utils/slug.util.ts**
-
-Utilities for URL slug generation: slugify (converts text to lowercase URL-safe slug with accent removal) and isValidSlug (validates slug format).
-
-### **shared/hooks/useDebounce.ts**
-
-React hook that debounces function calls with configurable delay, clearing previous timeouts and cleaning up on unmount.
-
-### **shared/components/ui/Button.astro**
-
-Polymorphic button component that renders as button or anchor tag with variants (primary, secondary, ghost, danger), sizes (sm, md, lg), and disabled state styling.
-
----
-
-### **4. Markdown Feature** (`markdown/`)
-
-#### **markdown/services/markdown.service.ts**
-
-Markdown parsing service using marked and Shiki for syntax highlighting, with custom renderers for code blocks (with copy buttons) and headings (with anchor links).
-
----
-
-#### **markdown/components/MarkdownRenderer.astro**
-
-Astro component that initializes markdown service, renders content to HTML with syntax highlighting, and adds client-side copy button functionality for code blocks.
+```mermaid
+graph LR
+    subgraph "Search State"
+        S1[query: string]
+        S2[results: SearchResult array]
+        S3[isSearching: boolean]
+    end
+    
+    subgraph "Components"
+        C1[SearchBar] -.->|lee/escribe| S1
+        C1 -.->|lee| S3
+        C2[SearchResults] -.->|lee| S2
+        C2 -.->|lee| S3
+    end
+```
 
 ---
 
-## 📱 **RESPONSIVE DESIGN**
+## 🎨 SISTEMA DE TEMAS
 
-CSS Grid layout with three columns (sidebar, main, TOC) that collapses to single column on mobile (< 1024px) hiding sidebars.
+### Store: theme.store.ts
 
----
+**Implementación**: `frontend/src/shared/stores/theme.store.ts`
 
-## ⚡ **OPTIMIZACIONES**
+**Funcionalidad**:
+- Gestiona tema actual (light/dark)
+- Persiste en localStorage
+- Actualiza atributo `data-theme` en `<html>`
+- Detecta preferencia del sistema
 
-### **1. Image Optimization**
+### Flujo de Cambio de Tema
 
-Using Astro's Image component with lazy loading, WebP format, and specified dimensions for performance.
-
-### **2. Code Splitting**
-
-Lazy loading of editor component to reduce initial bundle size.
-
-### **3. Prefetch**
-
-Prefetching popular documents API endpoint to improve perceived performance.
-
----
-
-## 🧪 **TESTING**
-
-Using Vitest with Astro's experimental container API to test component rendering with props validation.
+```mermaid
+flowchart TD
+    A[Usuario clic en ThemeToggle] --> B[toggleTheme]
+    B --> C[Actualizar theme.store]
+    C --> D[Guardar en localStorage]
+    D --> E[Actualizar data-theme en html]
+    E --> F[CSS variables se actualizan]
+    F --> G[UI re-renderiza con nuevo tema]
+```
 
 ---
 
-## 🚀 **DEPLOYMENT**
+## 📄 ROUTING
 
-### **Build para Producción**
+### Tabla de Rutas
 
-Run `npm run build` to generate dist/ with SSR server and static assets, then `npm run preview` to test the production build.
+| Ruta | Archivo | Descripción |
+|------|---------|-------------|
+| `/` | `pages/index.astro` | Landing page |
+| `/docs` | `pages/docs/index.astro` | Lista de documentos |
+| `/docs/[...slug]` | `pages/docs/[...slug].astro` | Vista de documento |
+| `/docs/new` | `pages/docs/new.astro` | Crear documento |
+| `/docs/edit/[...slug]` | `pages/docs/edit/[...slug].astro` | Editar documento |
+| `/search` | `pages/search.astro` | Búsqueda |
+| `/architecture` | `pages/architecture/index.astro` | Arquitectura |
+| `/architecture/frontend` | `pages/architecture/frontend.astro` | Frontend |
+| `/architecture/backend` | `pages/architecture/backend.astro` | Backend |
+| `/architecture/database` | `pages/architecture/database.astro` | Database |
 
-### **Variables de Entorno**
-
-Configure PUBLIC_API_URL and PUBLIC_WS_URL for API and WebSocket endpoints.
+**Total**: 18 páginas Astro
 
 ---
 
-**Siguiente**: Ver [Backend ARCHITECTURE](../docs-backend/ARCHITECTURE.md)
+## 🔄 GESTIÓN DE ESTADO
+
+### Nanostores
+
+**Implementación**: `frontend/src/shared/stores/`
+
+```mermaid
+graph TB
+    subgraph "Stores"
+        S1[folder-tree.store.ts<br/>Expansión de folders]
+        S2[theme.store.ts<br/>Dark mode]
+        S3[search.store.ts<br/>Búsqueda]
+    end
+    
+    subgraph "Components"
+        C1[SidebarItem]
+        C2[ThemeToggle]
+        C3[SearchBar]
+        C4[SearchResults]
+    end
+    
+    S1 -.->|reactivo| C1
+    S2 -.->|reactivo| C2
+    S3 -.->|reactivo| C3
+    S3 -.->|reactivo| C4
+```
+
+**Ventajas de Nanostores**:
+- Tamaño mínimo (~300 bytes)
+- Framework-agnostic (funciona con Astro + React)
+- Reactivo sin re-renders innecesarios
+- TypeScript nativo
+
+---
+
+## 📡 SERVICIOS API
+
+### Implementación
+
+**Base Service**: `frontend/src/services/api/base.service.ts`
+- Cliente HTTP con fetch
+- Manejo de errores
+- Timeout de 10 segundos
+
+**Servicios Específicos**:
+- `documents.service.ts`: CRUD de documentos
+- `folders.service.ts`: Árbol jerárquico
+- `categories.service.ts`: Categorías fijas
+- `search.service.ts`: Búsqueda FTS5
+
+### Flujo de Request
+
+```mermaid
+sequenceDiagram
+    participant C as Component
+    participant S as Service
+    participant B as Base Service
+    participant A as API Backend
+    
+    C->>S: documents.service.getBySlug('instalacion')
+    S->>B: base.get('/documents/instalacion')
+    B->>B: Agregar headers, timeout
+    B->>A: fetch('http://localhost:3000/documents/instalacion')
+    A-->>B: Response JSON
+    B->>B: Validar status, parsear JSON
+    B-->>S: Document data
+    S-->>C: Document object
+```
+
+---
+
+## 🎨 DISEÑO RESPONSIVE
+
+### Breakpoints
+
+| Breakpoint | Ancho | Layout |
+|------------|-------|--------|
+| Mobile | < 768px | Single column, sidebar hidden |
+| Tablet | 768px - 1024px | Two columns, TOC hidden |
+| Desktop | > 1024px | Three columns (sidebar, main, TOC) |
+
+### Grid Layout
+
+```mermaid
+graph LR
+    subgraph "Desktop > 1024px"
+        D1[Sidebar<br/>250px]
+        D2[Main Content<br/>flex-1]
+        D3[TOC<br/>200px]
+    end
+    
+    subgraph "Tablet 768-1024px"
+        T1[Sidebar<br/>250px]
+        T2[Main Content<br/>flex-1]
+    end
+    
+    subgraph "Mobile < 768px"
+        M1[Main Content<br/>100%]
+    end
+```
+
+---
+
+## ⚡ OPTIMIZACIONES
+
+### 1. Code Splitting
+
+- Lazy loading de componentes pesados (Editor, Mermaid)
+- Islands solo cargan JavaScript necesario
+
+### 2. Image Optimization
+
+- Lazy loading nativo (`loading="lazy"`)
+- Formato WebP cuando disponible
+- Dimensiones especificadas para evitar layout shift
+
+### 3. Prefetch
+
+- Prefetch de documentos populares
+- Preload de fuentes críticas
+
+---
+
+## 🧪 TESTING
+
+**Framework**: Vitest (configurado pero no implementado en POC)
+
+**Estrategia futura**:
+- Unit tests para utilities y services
+- Component tests para componentes React
+- E2E tests con Playwright
+
+---
+
+## 🚀 DEPLOYMENT
+
+### Build para Producción
+
+```bash
+npm run build
+```
+
+Genera `dist/` con:
+- Servidor SSR (Node.js)
+- Assets estáticos optimizados
+- HTML pre-renderizado
+
+### Variables de Entorno
+
+```env
+PUBLIC_API_URL=http://localhost:3000
+PUBLIC_WS_URL=ws://localhost:3000
+```
+
+---
+
+## 📚 REFERENCIAS
+
+- **Componentes**: `frontend/src/`
+- **Stores**: `frontend/src/shared/stores/`
+- **Services**: `frontend/src/services/`
+- **Mocks**: `frontend/src/mocks/`
+- **Configuración**: `frontend/astro.config.mjs`, `frontend/tailwind.config.mjs`
+
+**Siguiente**: Ver [Design System](./DESIGN_SYSTEM.md) para detalles de componentes shadcn/ui.
