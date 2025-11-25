@@ -230,16 +230,16 @@ export function MarkdownEditor({
     }
 
     try {
-      setSaving(true);
+      // Usar EditorService que maneja API o localStorage
+      await EditorService.saveDraft(slug, content, documentId);
       
-      await documentsApi.updateDraft(documentId, {
-        title: docTitle,
-        content: content,
-        excerpt: excerpt,
-        path: path,
-      });
+      // También actualizar título si cambió
+      if (docTitle !== title) {
+        await documentsApi.updateDraft(documentId, {
+          title: docTitle,
+        });
+      }
 
-      setLastSaved(new Date());
       setHasChanges(false);
       
       toast({
@@ -253,8 +253,6 @@ export function MarkdownEditor({
         title: "Error",
         description: "No se pudieron guardar los cambios.",
       });
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -277,8 +275,8 @@ export function MarkdownEditor({
     if (!confirmed) return;
 
     try {
-      setSaving(true);
-      await documentsApi.publishDocument(documentId);
+      // Usar EditorService que maneja API o localStorage
+      await EditorService.publishDocument(slug, documentId);
       
       toast({
         title: "Publicado",
@@ -296,8 +294,6 @@ export function MarkdownEditor({
         title: "Error",
         description: "No se pudo publicar el documento.",
       });
-    } finally {
-      setSaving(false);
     }
   };
 

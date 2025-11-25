@@ -1,6 +1,7 @@
 ---
 import { markdownService } from "../services/markdown.service";
 import { ImageLightboxController } from "./ImageLightboxController";
+import { MermaidInit } from "./MermaidInit";
 import "@/markdown/styles/markdown.css";
 
 interface Props {
@@ -17,6 +18,9 @@ const htmlContent = await markdownService.render(content);
 
 <!-- shadcn Dialog-based Lightbox -->
 <ImageLightboxController client:only="react" />
+
+<!-- Mermaid Diagram Initializer -->
+<MermaidInit client:load />
 
 <script>
   // Image click handler - communicates with React lightbox

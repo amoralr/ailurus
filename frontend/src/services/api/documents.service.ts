@@ -49,6 +49,27 @@ export class DocumentsApiService extends BaseApiService {
   async archiveDocument(id: number): Promise<{ success: boolean }> {
     return this.delete<{ success: boolean }>(`/docs/${id}`);
   }
+
+  /**
+   * POST /docs/:id/folders/:folderId - Agrega documento a carpeta
+   */
+  async addToFolder(documentId: number, folderId: number): Promise<{ success: boolean }> {
+    return this.post<{ success: boolean }>(`/docs/${documentId}/folders/${folderId}`, {});
+  }
+
+  /**
+   * DELETE /docs/:id/folders/:folderId - Remueve documento de carpeta
+   */
+  async removeFromFolder(documentId: number, folderId: number): Promise<{ success: boolean }> {
+    return this.delete<{ success: boolean }>(`/docs/${documentId}/folders/${folderId}`);
+  }
+
+  /**
+   * GET /docs/orphans/list - Obtiene documentos sin carpeta
+   */
+  async getOrphans(): Promise<Array<{ id: number; slug: string; title: string; excerpt: string | null; categoryId: string }>> {
+    return this.get<Array<{ id: number; slug: string; title: string; excerpt: string | null; categoryId: string }>>('/docs/orphans/list');
+  }
 }
 
 // Singleton instance

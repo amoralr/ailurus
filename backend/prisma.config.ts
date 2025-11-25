@@ -9,6 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: env("DATABASE_URL") || "postgresql://postgres:postgres@localhost:5432/ailurus_docs?schema=public",
+    url: "file:./prisma/dev.db",
   },
 });

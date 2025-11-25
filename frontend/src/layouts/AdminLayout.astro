@@ -1,0 +1,96 @@
+---
+import Layout from "./Layout.astro";
+import { Toaster } from "@/components/ui/toaster";
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+const adminLinks = [
+  { href: "/admin/categories", label: "Categorías", icon: "📚" },
+  { href: "/admin/folders", label: "Carpetas", icon: "📁" },
+  { href: "/admin/documents", label: "Documentos", icon: "📄" },
+];
+---
+
+<Layout title={title}>
+  <div class="flex min-h-screen bg-background">
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar w-64 border-r bg-card">
+      <div class="sticky top-16 flex h-[calc(100vh-4rem)] flex-col gap-4 p-6">
+        <!-- Header -->
+        <div class="space-y-1">
+          <h2 class="text-lg font-semibold">⚙️ Administración</h2>
+          <p class="text-sm text-muted-foreground">Gestión de contenido</p>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 space-y-1">
+          {
+            adminLinks.map((link) => (
+              <a
+                href={link.href}
+                class:list={[
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  currentPath === link.href
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                ]}
+              >
+                <span class="text-base">{link.icon}</span>
+                {link.label}
+              </a>
+            ))
+          }
+        </nav>
+
+        <!-- Footer -->
+        <div class="space-y-2 border-t pt-4">
+          <a
+            href="/docs"
+            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <span class="text-base">←</span>
+            Volver a Documentación
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 pt-14">
+      <div class="container mx-auto max-w-7xl p-6 pt-8">
+        <slot />
+      </div>
+    </main>
+  </div>
+
+  <Toaster client:load />
+</Layout>
+
+<style>
+  .admin-sidebar {
+    position: fixed;
+    top: 4rem;
+    left: 0;
+    height: calc(100vh - 4rem);
+    overflow-y: auto;
+  }
+
+  main {
+    margin-left: 16rem; /* 64 * 4 = 256px (w-64) */
+  }
+
+  @media (max-width: 1024px) {
+    .admin-sidebar {
+      display: none;
+    }
+
+    main {
+      margin-left: 0;
+    }
+  }
+</style>

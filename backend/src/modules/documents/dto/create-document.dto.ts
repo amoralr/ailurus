@@ -35,4 +35,12 @@ export class CreateDocumentDto {
   @IsString()
   @IsOptional()
   createdBy?: string;
+
+  @IsString()
+  @IsOptional()
+  categoryName?: string;
+
+  @IsString()
+  @IsOptional()
+  categoryIcon?: string;
 }

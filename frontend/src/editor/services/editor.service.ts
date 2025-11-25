@@ -1,4 +1,5 @@
 import { setSaving, setLastSaved, setError } from "../stores/editor.store";
+import { documentsApi } from "@/documents/services/documents.service";
 
 interface Draft {
   content: string;
@@ -12,32 +13,52 @@ interface DraftStorage {
 
 export class EditorService {
   private static readonly STORAGE_KEY = "ailurus_drafts";
-  private static readonly SAVE_DELAY = 500; // Simular latencia de API
+  private static readonly USE_MOCKS = import.meta.env.PUBLIC_USE_MOCKS === "true";
 
   /**
-   * Guarda un borrador en localStorage
+   * Guarda un borrador usando API o localStorage como fallback
    */
-  static async saveDraft(slug: string, content: string): Promise<void> {
+  static async saveDraft(slug: string, content: string, documentId?: number): Promise<void> {
     setSaving(true);
     setError(null);
 
     try {
-      // Simular llamada a API
-      await this.delay(this.SAVE_DELAY);
+      if (!this.USE_MOCKS && documentId) {
+        // Usar API
+        await documentsApi.updateDraft(documentId, { content });
+        console.log(`[EditorService] Draft saved to API for document ${documentId}`);
+      } else {
+        // Fallback a localStorage (mocks o sin documentId)
+        const drafts = this.getDrafts();
+        drafts[slug] = {
+          content,
+          savedAt: new Date().toISOString(),
+          slug,
+        };
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(drafts));
+        console.log(`[EditorService] Draft saved to localStorage for ${slug}`);
+      }
 
-      const drafts = this.getDrafts();
-      drafts[slug] = {
-        content,
-        savedAt: new Date().toISOString(),
-        slug,
-      };
-
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(drafts));
       setLastSaved(new Date());
     } catch (error) {
+      console.error('[EditorService] saveDraft failed:', error);
       const message = error instanceof Error ? error.message : "Error al guardar";
       setError(message);
-      throw error;
+      
+      // Fallback a localStorage en caso de error
+      try {
+        const drafts = this.getDrafts();
+        drafts[slug] = {
+          content,
+          savedAt: new Date().toISOString(),
+          slug,
+        };
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(drafts));
+        console.log(`[EditorService] Fallback: Draft saved to localStorage`);
+        setLastSaved(new Date());
+      } catch (fallbackError) {
+        throw error; // Lanzar el error original
+      }
     } finally {
       setSaving(false);
     }
@@ -82,24 +103,27 @@ export class EditorService {
   }
 
   /**
-   * Publica un documento (simula guardar en servidor)
+   * Publica un documento usando API
    */
-  static async publishDocument(slug: string, content: string): Promise<void> {
+  static async publishDocument(slug: string, documentId: number): Promise<void> {
     setSaving(true);
     setError(null);
 
     try {
-      // Simular llamada a API más lenta
-      await this.delay(800);
+      if (!this.USE_MOCKS && documentId) {
+        // Usar API para publicar
+        await documentsApi.publishDocument(documentId);
+        console.log(`[EditorService] Document ${documentId} published via API`);
+      } else {
+        // Simular publicación en modo mocks
+        console.log(`[EditorService] Simulating publish for ${slug}`);
+      }
 
-      // En un escenario real, aquí se enviaría al backend
-      console.log(`Publicando documento: ${slug}`);
-
-      // Eliminar el borrador después de publicar
+      // Eliminar el borrador de localStorage después de publicar
       this.deleteDraft(slug);
-
       setLastSaved(new Date());
     } catch (error) {
+      console.error('[EditorService] publishDocument failed:', error);
       const message = error instanceof Error ? error.message : "Error al publicar";
       setError(message);
       throw error;
@@ -159,10 +183,24 @@ export class EditorService {
   }
 
   /**
-   * Helper para simular delay
+   * Obtiene el documento desde la API por slug
    */
-  private static delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  static async getDocumentBySlug(slug: string): Promise<{ id: number; content: string } | null> {
+    if (this.USE_MOCKS) {
+      // En modo mocks, usar localStorage
+      const draft = this.getDraft(slug);
+      return draft ? { id: 0, content: draft } : null;
+    }
+
+    try {
+      const doc = await documentsApi.getDocumentBySlug(slug);
+      return { id: doc.id, content: doc.content };
+    } catch (error) {
+      console.error(`[EditorService] getDocumentBySlug failed:`, error);
+      // Fallback a localStorage
+      const draft = this.getDraft(slug);
+      return draft ? { id: 0, content: draft } : null;
+    }
   }
 
   /**

@@ -27,6 +27,11 @@ export class DocumentsController {
     return this.documentsService.findAll();
   }
 
+  @Get(':slug/navigation')
+  getNavigation(@Param('slug') slug: string) {
+    return this.documentsService.getNavigation(slug);
+  }
+
   @Get(':slug')
   findBySlug(@Param('slug') slug: string) {
     return this.documentsService.findBySlug(slug);
@@ -55,5 +60,28 @@ export class DocumentsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   archive(@Param('id', ParseIntPipe) id: number) {
     return this.documentsService.archive(id);
+  }
+
+  @Post(':id/folders/:folderId')
+  @HttpCode(HttpStatus.CREATED)
+  addToFolder(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('folderId', ParseIntPipe) folderId: number,
+  ) {
+    return this.documentsService.addToFolder(id, folderId);
+  }
+
+  @Delete(':id/folders/:folderId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeFromFolder(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('folderId', ParseIntPipe) folderId: number,
+  ) {
+    return this.documentsService.removeFromFolder(id, folderId);
+  }
+
+  @Get('orphans/list')
+  getOrphans() {
+    return this.documentsService.findOrphans();
   }
 }

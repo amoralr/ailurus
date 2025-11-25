@@ -6,11 +6,17 @@ export class SearchService {
   /**
    * Busca documentos usando backend FTS5 o mocks
    * @param query - Término de búsqueda
-   * @returns Array de resultados con excerpts destacados
+   * @param limit - Número de resultados por página
+   * @param offset - Offset para paginación
+   * @returns Array de resultados con excerpts destacados y total
    */
-  static async search(query: string): Promise<SearchResult[]> {
+  static async search(
+    query: string,
+    limit: number = 20,
+    offset: number = 0
+  ): Promise<{ results: SearchResult[]; total: number }> {
     if (!query || query.trim().length < 2) {
-      return [];
+      return { results: [], total: 0 };
     }
 
     const USE_MOCKS = import.meta.env.PUBLIC_USE_MOCKS === "true";
@@ -19,18 +25,22 @@ export class SearchService {
 
     // Si mocks está activado o search API desactivado, usar búsqueda local
     if (USE_MOCKS || !ENABLE_SEARCH_API) {
-      return this.searchInMocks(query);
+      const results = this.searchInMocks(query);
+      return {
+        results: results.slice(offset, offset + limit),
+        total: results.length,
+      };
     }
 
     // Usar backend FTS5
     try {
       const response = await searchApi.search({
         q: query,
-        limit: 20,
-        offset: 0,
+        limit,
+        offset,
       });
 
-      return response.data.map((result) => ({
+      const results = response.data.map((result) => ({
         id: result.id,
         slug: result.slug,
         title: result.title,
@@ -38,9 +48,18 @@ export class SearchService {
         category: result.category,
         highlights: [], // FTS5 ya retorna excerpts optimizados
       }));
+
+      return {
+        results,
+        total: response.total,
+      };
     } catch (error) {
       console.error("[Search] API failed, falling back to mocks:", error);
-      return this.searchInMocks(query);
+      const results = this.searchInMocks(query);
+      return {
+        results: results.slice(offset, offset + limit),
+        total: results.length,
+      };
     }
   }
 

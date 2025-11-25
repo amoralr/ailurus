@@ -26,6 +26,8 @@ export interface CreateDocumentDto {
     content: string;
     excerpt?: string;
     categoryId: string;
+    categoryName?: string;
+    categoryIcon?: string;
     subcategory?: string;
     path: string;
     status?: DocumentStatus;

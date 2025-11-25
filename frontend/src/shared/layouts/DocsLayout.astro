@@ -1,0 +1,102 @@
+---
+import Layout from "./Layout.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  ogType?: "website" | "article";
+  author?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  ogType,
+  author,
+  publishedTime,
+  modifiedTime,
+} = Astro.props;
+---
+
+<Layout
+  title={title}
+  description={description}
+  ogImage={ogImage}
+  ogType={ogType}
+  author={author}
+  publishedTime={publishedTime}
+  modifiedTime={modifiedTime}
+>
+  <div class="docs-layout">
+    <slot name="sidebar" />
+
+    <main class="docs-main">
+      <slot />
+    </main>
+
+    <slot name="toc" />
+  </div>
+</Layout>
+
+<style is:global>
+  .docs-layout {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  .docs-main {
+    flex: 1;
+    width: 100%;
+    max-width: calc(100vw - 280px);
+    padding: 80px 4rem 3rem 4rem;
+    margin-left: 280px;
+    margin-right: 0;
+  }
+
+  /* When TOC is present */
+  .docs-layout:has(.toc) .docs-main {
+    margin-right: 250px;
+    max-width: calc(100vw - 530px);
+  }
+
+  /* Center content with reasonable max-width for readability */
+  .docs-main > * {
+    max-width: 850px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Responsive */
+  @media (max-width: 1440px) {
+    .docs-layout {
+      display: flex;
+    }
+
+    .docs-layout:has(.toc) .docs-main {
+      margin-right: 0;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .docs-layout {
+      display: block;
+    }
+
+    .docs-main {
+      margin-left: 0;
+      margin-right: 0;
+      padding: 2rem 1.5rem 2rem 1.5rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .docs-main {
+      padding: 2rem 1rem;
+    }
+  }
+</style>

@@ -62,7 +62,16 @@ export class BaseApiService {
     const url = new URL(endpoint, this.baseURL);
 
     try {
-      console.log(`[API] POST ${endpoint}`, body);
+      console.log(`\n=== API POST REQUEST ===`);
+      console.log(`[API] Endpoint: ${endpoint}`);
+      console.log(`[API] Full URL: ${url.toString()}`);
+      console.log(`[API] Body:`, JSON.stringify(body, null, 2));
+      console.log(`[API] Has categoryName: ${!!body.categoryName}`);
+      console.log(`[API] Has categoryIcon: ${!!body.categoryIcon}`);
+      console.log(`[API] categoryName value: "${body.categoryName}"`);
+      console.log(`[API] categoryIcon value: "${body.categoryIcon}"`);
+      console.log(`========================\n`);
+      
       const response = await fetch(url.toString(), {
         method: 'POST',
         headers: {

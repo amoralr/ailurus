@@ -1,7 +1,9 @@
 import { useStore } from "@nanostores/react";
-import { searchStore } from "../stores/search.store";
+import { searchStore, appendResults, setLoadingMore } from "../stores/search.store";
+import { SearchService } from "../services/search.service";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FileText, Search, Loader2 } from "lucide-react";
 import { SearchResultsSkeleton } from "@/components/ui/skeleton";
 
 export function SearchResults() {
@@ -41,12 +43,26 @@ export function SearchResults() {
     );
   }
 
+  // Función para cargar más resultados
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const newOffset = state.offset + 20;
+      const { results, total } = await SearchService.search(state.query, 20, newOffset);
+      appendResults(results, total, newOffset);
+    } catch (error) {
+      console.error("[SearchResults] Load more failed:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   // Mostrar resultados
   return (
     <div className="search-results">
       <div className="results-header">
         <h2>
-          {state.results.length} resultado{state.results.length !== 1 ? "s" : ""}{" "}
+          {state.results.length} de {state.total} resultado{state.total !== 1 ? "s" : ""}{" "}
           para <strong>"{state.query}"</strong>
         </h2>
       </div>
@@ -92,6 +108,27 @@ export function SearchResults() {
           </a>
         ))}
       </div>
+
+      {state.hasMore && (
+        <div className="flex justify-center mt-8">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleLoadMore}
+            disabled={state.isLoadingMore}
+            className="gap-2"
+          >
+            {state.isLoadingMore ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Cargando...
+              </>
+            ) : (
+              `Cargar más resultados (${state.total - state.results.length} restantes)`
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

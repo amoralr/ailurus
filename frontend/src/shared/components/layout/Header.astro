@@ -3,9 +3,10 @@ import { ThemeToggle } from "./ThemeToggle";
 ---
 
 <header
-  class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+  id="main-header"
+  class="fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300"
 >
-  <div class="container flex h-16 items-center">
+  <div class="flex h-16 items-center px-6 max-w-full">
     <!-- Logo -->
     <a href="/" class="flex items-center space-x-2 mr-6">
       <img src="/logo.png" alt="Ailurus" class="h-8 w-8 pixel-art" />
@@ -98,7 +99,7 @@ import { ThemeToggle } from "./ThemeToggle";
 
   <!-- Mobile Menu -->
   <div id="mobile-menu" class="hidden border-t md:!hidden">
-    <nav class="container py-4 flex flex-col space-y-3">
+    <nav class="py-4 px-6 flex flex-col space-y-3">
       <a
         href="/docs"
         class="text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60"
@@ -123,6 +124,17 @@ import { ThemeToggle } from "./ThemeToggle";
   </div>
 </header>
 
+<style>
+  #main-header.scrolled {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: hsl(var(--background));
+  }
+
+  :global(.dark) #main-header.scrolled {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+</style>
+
 <script>
   // Mobile menu toggle
   const button = document.getElementById("mobile-menu-button");
@@ -146,5 +158,34 @@ import { ThemeToggle } from "./ThemeToggle";
         menu?.classList.add("hidden");
       });
     });
+  });
+
+  // Scroll behavior for header - add shadow when scrolling
+  const header = document.getElementById("main-header");
+
+  function handleScroll() {
+    const currentScrollY = window.scrollY;
+
+    if (!header) return;
+
+    if (currentScrollY > 10) {
+      // Add shadow when scrolling
+      header.classList.add("scrolled");
+    } else {
+      // Remove shadow at top
+      header.classList.remove("scrolled");
+    }
+  }
+
+  // Throttle scroll events for better performance
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        handleScroll();
+        ticking = false;
+      });
+      ticking = true;
+    }
   });
 </script>

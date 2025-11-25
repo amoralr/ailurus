@@ -1,0 +1,22 @@
+/* Dark Theme Variables */
+.dark {
+  --background: 0 0% 10%; /* Ailurus Dark */
+  --foreground: 60 9.1% 97.8%;
+  --card: 0 0% 15%;
+  --card-foreground: 60 9.1% 97.8%;
+  --popover: 0 0% 15%;
+  --popover-foreground: 60 9.1% 97.8%;
+  --primary: 356 83% 57%; /* Ailurus Red */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 12 6.5% 15.1%;
+  --secondary-foreground: 60 9.1% 97.8%;
+  --muted: 12 6.5% 15.1%;
+  --muted-foreground: 24 5.4% 63.9%;
+  --accent: 25 100% 48%; /* Ailurus Orange */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --border: 12 6.5% 25%;
+  --input: 12 6.5% 25%;
+  --ring: 356 83% 57%;
+}

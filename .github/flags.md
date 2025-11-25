@@ -90,9 +90,46 @@ Behavioral flags for Copilot CLI to enable specific execution modes and tool sel
 - Trigger: Domain-specific optimization needs
 - Behavior: Target specific analysis domain and expertise application
 
+## Script Utility Flags
+
+**--doc / --documentation**
+
+- Trigger: Documentation lookup requests, guide inquiries, reference needs
+- Behavior: Execute documentation.js script to fetch content from backend
+- Usage: `--doc <slug>` or `--doc search:<query>` or `--doc category:<id>`
+
+**--doc-slug [slug]**
+
+- Trigger: Specific document request by slug identifier
+- Behavior: Fetch document: `node .github/scripts/documentation.js --slug [slug]`
+- Example: `--doc-slug instalacion`
+
+**--doc-search [query]**
+
+- Trigger: Search-based documentation discovery
+- Behavior: Search docs: `node .github/scripts/documentation.js --search "[query]"`
+- Example: `--doc-search "database migration"`
+
+**--doc-category [id]**
+
+- Trigger: Category-based documentation browsing
+- Behavior: List category: `node .github/scripts/documentation.js --category [id]`
+- Example: `--doc-category getting-started`
+
+**--doc-list**
+
+- Trigger: Request for all available documentation
+- Behavior: Execute: `node .github/scripts/documentation.js --list`
+
+**--doc-tree**
+
+- Trigger: Navigation structure requests
+- Behavior: Execute: `node .github/scripts/documentation.js --tree`
+
 ## Flag Priority Rules
 
 **Safety First**: --safe-mode > --validate > optimization flags
 **Explicit Override**: User flags > auto-detection
 **MCP Control**: --no-mcp overrides all individual MCP flags
 **Scope Precedence**: system > project > module > file
+**Script Execution**: --doc flags trigger script execution before other processing

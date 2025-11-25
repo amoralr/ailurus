@@ -1,0 +1,47 @@
+---
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface Props {
+  message?: string;
+  showRetry?: boolean;
+}
+
+const {
+  message = "Ocurrió un error al cargar el contenido. Por favor, intenta nuevamente.",
+  showRetry = true,
+} = Astro.props;
+---
+
+<div
+  class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center"
+>
+  <div
+    class="flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-4"
+  >
+    <AlertCircle className="w-8 h-8 text-destructive" />
+  </div>
+
+  <h3 class="text-xl font-semibold mb-2 text-foreground">Error al cargar</h3>
+
+  <p class="text-muted-foreground mb-6 max-w-md">
+    {message}
+  </p>
+
+  {
+    showRetry && (
+      <Button variant="outline" id="retry-button" className="gap-2">
+        <RefreshCw className="w-4 h-4" />
+        Reintentar
+      </Button>
+    )
+  }
+</div>
+
+<script>
+  // Make button work without React
+  const retryButton = document.getElementById("retry-button");
+  if (retryButton) {
+    retryButton.addEventListener("click", () => window.location.reload());
+  }
+</script>

@@ -19,6 +19,9 @@ export interface FolderNodeResponseDto {
   /** For files: slug to navigate to */
   slug?: string;
 
+  /** For files: document status (DRAFT, PUBLISHED, ARCHIVED) */
+  status?: string;
+
   /** For folders: nested children */
   children?: FolderNodeResponseDto[];
 

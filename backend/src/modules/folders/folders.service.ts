@@ -26,7 +26,9 @@ export class FoldersService {
    */
   private transformToResponseDto(folder: any): FolderNodeResponseDto {
     const isFile = folder.type === FolderType.FILE;
-    const slug = isFile && folder.documents?.[0]?.slug;
+    const document = isFile && folder.documents?.[0];
+    const slug = document?.slug;
+    const status = document?.status;
 
     return {
       id: folder.id.toString(),
@@ -34,6 +36,7 @@ export class FoldersService {
       type: folder.type.toLowerCase() as 'folder' | 'file',
       icon: folder.icon,
       slug: slug || undefined,
+      status: status || undefined,
       path: folder.path,
       order: folder.order,
       count: folder.children?.length || undefined,
@@ -239,5 +242,134 @@ export class FoldersService {
     }
 
     await this.prisma.folder.delete({ where: { id } });
+  }
+
+  /**
+   * Obtiene todos los IDs de carpetas descendientes recursivamente
+   */
+  private async getDescendantFolderIds(folderId: number): Promise<number[]> {
+    const children = await this.prisma.folder.findMany({
+      where: { parentId: folderId },
+      select: { id: true },
+    });
+
+    const descendantIds: number[] = [];
+    
+    for (const child of children) {
+      descendantIds.push(child.id);
+      // Recursivamente obtener descendientes de cada hijo
+      const childDescendants = await this.getDescendantFolderIds(child.id);
+      descendantIds.push(...childDescendants);
+    }
+
+    return descendantIds;
+  }
+
+  /**
+   * Elimina una carpeta y todo su contenido relacionado de forma recursiva
+   * Esto incluye:
+   * - Todas las subcarpetas (recursivamente)
+   * - Todos los documentos asociados a través de FolderDocument
+   * - Todas las categorías asociadas a través de FolderCategory
+   */
+  async deleteRecursive(id: number) {
+    const folder = await this.prisma.folder.findUnique({
+      where: { id },
+      include: {
+        children: true,
+        documents: true,
+        categories: true,
+      },
+    });
+
+    if (!folder) {
+      throw new NotFoundException(`Folder with id "${id}" not found`);
+    }
+
+    // Obtener todos los IDs de carpetas descendientes (incluye la carpeta actual)
+    const descendantIds = await this.getDescendantFolderIds(id);
+    const allFolderIds = [id, ...descendantIds];
+
+    // Usar una transacción para garantizar consistencia
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Eliminar todas las relaciones FolderDocument de todas las carpetas afectadas
+      await tx.folderDocument.deleteMany({
+        where: {
+          folderId: {
+            in: allFolderIds,
+          },
+        },
+      });
+
+      // 2. Eliminar todas las relaciones FolderCategory de todas las carpetas afectadas
+      await tx.folderCategory.deleteMany({
+        where: {
+          folderId: {
+            in: allFolderIds,
+          },
+        },
+      });
+
+      // 3. Eliminar todas las carpetas (Prisma se encarga del CASCADE)
+      // Eliminamos en orden inverso (hojas primero) para evitar conflictos
+      for (let i = allFolderIds.length - 1; i >= 0; i--) {
+        await tx.folder.delete({
+          where: { id: allFolderIds[i] },
+        });
+      }
+    });
+
+    return {
+      deletedFolders: allFolderIds.length,
+      message: `Successfully deleted folder "${folder.name}" and ${allFolderIds.length - 1} descendant(s)`,
+    };
+  }
+
+  /**
+   * Cuenta el número total de carpetas que se eliminarán (incluyendo descendientes)
+   */
+  async countFoldersToDelete(id: number): Promise<{
+    folderCount: number;
+    documentCount: number;
+    folderNames: string[];
+  }> {
+    const folder = await this.prisma.folder.findUnique({
+      where: { id },
+    });
+
+    if (!folder) {
+      throw new NotFoundException(`Folder with id "${id}" not found`);
+    }
+
+    // Obtener todos los IDs de carpetas descendientes
+    const descendantIds = await this.getDescendantFolderIds(id);
+    const allFolderIds = [id, ...descendantIds];
+
+    // Obtener información de todas las carpetas
+    const folders = await this.prisma.folder.findMany({
+      where: {
+        id: {
+          in: allFolderIds,
+        },
+      },
+      select: {
+        name: true,
+        documents: true,
+      },
+    });
+
+    // Contar documentos únicos asociados
+    const documentIds = new Set<number>();
+    folders.forEach((f) => {
+      f.documents.forEach((doc) => {
+        documentIds.add(doc.documentId);
+      });
+    });
+
+    return {
+      folderCount: allFolderIds.length,
+      documentCount: documentIds.size,
+      folderNames: folders.map((f) => f.name),
+    };
   }
 }

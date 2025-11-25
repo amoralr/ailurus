@@ -1,0 +1,44 @@
+/* Font Imports */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+
+/* Import theme variables */
+@import './themes/light.css';
+@import './themes/dark.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  /* Smooth theme transitions */
+  :root {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  html {
+    background-color: hsl(var(--background));
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Custom Ailurus Styles */
+@layer components {
+  .ailurus-text-gradient {
+    @apply bg-gradient-to-r from-ailurus-red via-ailurus-orange to-ailurus-red bg-clip-text text-transparent;
+  }
+
+  /* Pixel Art Logo Rendering */
+  .pixel-art {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+}

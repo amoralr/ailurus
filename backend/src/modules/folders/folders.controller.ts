@@ -59,4 +59,21 @@ export class FoldersController {
   delete(@Param('id') id: string) {
     return this.foldersService.delete(parseInt(id));
   }
+
+  /**
+   * DELETE /folders/:id/recursive - Elimina un folder y todo su contenido recursivamente
+   */
+  @Delete(':id/recursive')
+  @HttpCode(HttpStatus.OK)
+  deleteRecursive(@Param('id') id: string) {
+    return this.foldersService.deleteRecursive(parseInt(id));
+  }
+
+  /**
+   * GET /folders/:id/delete-preview - Obtiene información sobre qué se eliminará
+   */
+  @Get(':id/delete-preview')
+  getDeletePreview(@Param('id') id: string) {
+    return this.foldersService.countFoldersToDelete(parseInt(id));
+  }
 }

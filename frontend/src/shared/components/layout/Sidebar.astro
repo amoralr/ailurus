@@ -1,7 +1,8 @@
 ---
 import { foldersApi } from "@/services/api/folders.service";
 import { MOCK_FOLDERS } from "@/mocks/folders.mock";
-import { SidebarItem } from "./SidebarItem";
+import { SidebarReact } from "./SidebarReact";
+import { SidebarToggle } from "./SidebarToggle";
 
 interface Props {
   currentSlug?: string;
@@ -14,98 +15,19 @@ const USE_MOCKS = import.meta.env.PUBLIC_USE_MOCKS === "true";
 let folders;
 
 if (USE_MOCKS) {
-  // Use mock data
   folders = MOCK_FOLDERS;
 } else {
-  // Fetch from API
   try {
     folders = await foldersApi.getFolderTree();
   } catch (error) {
     console.error("[Sidebar] Failed to fetch folders from API:", error);
-    // Fallback to mocks
     folders = MOCK_FOLDERS;
   }
 }
 ---
 
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <a href="/" class="sidebar-logo">
-      <span class="logo-icon">🦝</span>
-      <span class="logo-text">Ailurus</span>
-    </a>
-  </div>
-
-  <nav
-    class="sidebar-nav"
-    role="navigation"
-    aria-label="Documentation navigation"
-  >
-    {
-      folders.map((rootNode) => (
-        <SidebarItem
-          node={rootNode}
-          depth={0}
-          currentSlug={currentSlug}
-          client:load
-        />
-      ))
-    }
-  </nav>
-</aside>
-
-<!-- Mobile toggle button -->
-<button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-  >
-    <path d="M3 12h18M3 6h18M3 18h18"></path>
-  </svg>
-</button>
-
-<script>
-  // Mobile sidebar toggle
-  const sidebar = document.getElementById("sidebar");
-  const toggle = document.getElementById("sidebar-toggle");
-  const overlay = document.createElement("div");
-  overlay.className = "sidebar-overlay";
-  document.body.appendChild(overlay);
-
-  function openSidebar() {
-    sidebar?.classList.add("open");
-    overlay.classList.add("active");
-    document.body.style.overflow = "hidden";
-  }
-
-  function closeSidebar() {
-    sidebar?.classList.remove("open");
-    overlay.classList.remove("active");
-    document.body.style.overflow = "";
-  }
-
-  toggle?.addEventListener("click", () => {
-    if (sidebar?.classList.contains("open")) {
-      closeSidebar();
-    } else {
-      openSidebar();
-    }
-  });
-
-  overlay.addEventListener("click", closeSidebar);
-
-  // Close on navigation (delegate to catch dynamically added links)
-  sidebar?.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement;
-    if (target.tagName === "A" && window.innerWidth < 1024) {
-      closeSidebar();
-    }
-  });
-</script>
+<SidebarReact initialData={folders} currentSlug={currentSlug} client:load />
+<SidebarToggle client:load />
 
 <style>
   .sidebar {
@@ -242,5 +164,80 @@ if (USE_MOCKS) {
 
   .sidebar::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground));
+  }
+
+  /* Orphan documents section */
+  .orphan-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .orphan-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .orphan-icon {
+    font-size: 1rem;
+  }
+
+  .orphan-title {
+    flex: 1;
+  }
+
+  .orphan-count {
+    background: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .orphan-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .orphan-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    margin-left: 1rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    transition: background-color 0.15s;
+  }
+
+  .orphan-item:hover {
+    background: hsl(var(--accent));
+  }
+
+  .orphan-item.active {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    font-weight: 500;
+  }
+
+  .orphan-item-icon {
+    font-size: 0.875rem;
+    opacity: 0.7;
+  }
+
+  .orphan-item-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>

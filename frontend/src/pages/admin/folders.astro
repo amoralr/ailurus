@@ -1,0 +1,8 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { FolderManager } from "@/folders/components/FolderManager";
+---
+
+<AdminLayout title="Gestión de Carpetas">
+  <FolderManager client:load />
+</AdminLayout>

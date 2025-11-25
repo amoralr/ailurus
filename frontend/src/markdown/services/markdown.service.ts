@@ -35,8 +35,12 @@ class MarkdownService {
       `;
     };
 
-    // Code blocks with syntax highlighting (handled separately)
+    // Code blocks with syntax highlighting and Mermaid support
     renderer.code = ({ text, lang }: { text: string; lang?: string }) => {
+      // Detectar bloques Mermaid
+      if (lang === 'mermaid') {
+        return `<div class="mermaid-container"><pre class="mermaid">${text}</pre></div>`;
+      }
       return `<pre><code class="language-${lang || 'text'}" data-code="${this.encodeCode(text)}" data-lang="${lang || 'text'}">${this.escapeHtml(text)}</code></pre>`;
     };
 

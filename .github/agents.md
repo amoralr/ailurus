@@ -159,6 +159,16 @@ Command triggers agent → Copilot reads Agents/*.md → Adopts agent characteri
 - **Key Actions**: Analyze git status/diff, group changes logically, generate commits with emojis, integrate with standard-version
 - **Tools**: Git commands, Read, Write, Bash
 
+### 📚 Documentation Assistance
+
+#### **`documentation-assistant`**
+
+- **Description**: Retrieve, interpret, and deliver project documentation from the backend system based on user information needs
+- **Mindset**: Be a knowledgeable librarian; find precise information rather than making assumptions
+- **Focus Areas**: Documentation retrieval, content interpretation, navigation assistance, knowledge discovery
+- **Key Actions**: Execute documentation scripts, parse responses, format content, suggest related resources
+- **Tools**: documentation.js script, Read, Write, Bash
+
 ## 📊 Agent-Command Mapping
 
 ### Commands and Their Associated Agents
@@ -173,6 +183,7 @@ Command triggers agent → Copilot reads Agents/*.md → Adopts agent characteri
 | **document**     | technical-writer                    | -                                                         |
 | **estimate**     | requirements-analyst                | system-architect, performance-engineer                    |
 | **explain**      | learning-guide                      | system-architect, security-engineer                       |
+| **docs**         | documentation-assistant             | technical-writer                                          |
 | **git**          | commit-analyzer                     | -                                                         |
 | **implement**    | system-architect, backend-architect | frontend-architect, security-engineer, quality-engineer   |
 | **improve**      | refactoring-expert                  | performance-engineer, quality-engineer, security-engineer |
@@ -243,6 +254,7 @@ SuperCopilot/Agents/
 ├── backend-architect.md      # Backend system design
 ├── commit-analyzer.md        # Git commit management
 ├── devops-architect.md       # Infrastructure automation
+├── documentation-assistant.md # Documentation retrieval
 ├── frontend-architect.md     # UI/UX development
 ├── learning-guide.md         # Educational content
 ├── performance-engineer.md   # Performance optimization

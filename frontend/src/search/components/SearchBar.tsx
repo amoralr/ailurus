@@ -47,8 +47,8 @@ export function SearchBar({
     setSearching(true);
 
     try {
-      const results = await SearchService.search(query);
-      setResults(results);
+      const { results, total } = await SearchService.search(query, 20, 0);
+      setResults(results, total, 0);
       setSearching(false);
 
       // Callback opcional
@@ -57,7 +57,7 @@ export function SearchBar({
       }
     } catch (error) {
       console.error("[SearchBar] Search failed:", error);
-      setResults([]);
+      setResults([], 0, 0);
       setSearching(false);
     }
   };
@@ -65,7 +65,7 @@ export function SearchBar({
   const handleClear = () => {
     setInput("");
     setQuery("");
-    setResults([]);
+    setResults([], 0, 0);
     inputRef.current?.focus();
   };
 

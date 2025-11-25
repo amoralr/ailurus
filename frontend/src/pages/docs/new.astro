@@ -1,8 +1,10 @@
 ---
 import EditorLayout from "@/layouts/EditorLayout.astro";
 import { NewDocumentForm } from "@/documents/components/NewDocumentForm";
+import { Toaster } from "@/components/ui/toaster";
 ---
 
 <EditorLayout title="Nuevo Documento - Ailurus">
   <NewDocumentForm client:load />
+  <Toaster client:load />
 </EditorLayout>

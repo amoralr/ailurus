@@ -297,6 +297,83 @@
   font-style: italic;
 }
 
+/* Mermaid Diagrams */
+.mermaid-container {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.mermaid-container .mermaid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.mermaid-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Mermaid Error Styles */
+.mermaid-error {
+  padding: 1.5rem;
+  background: hsl(var(--destructive) / 0.1);
+  border: 1px solid hsl(var(--destructive) / 0.3);
+  border-radius: 0.5rem;
+  color: hsl(var(--destructive-foreground));
+}
+
+.mermaid-error-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.mermaid-error-title {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.mermaid-error-details {
+  background: hsl(var(--background));
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: monospace;
+  overflow-x: auto;
+  margin: 0;
+}
+
+/* Mermaid Theme Overrides - Light mode */
+.markdown-content .mermaid {
+  --mermaid-primary-color: hsl(var(--primary));
+  --mermaid-secondary-color: hsl(var(--secondary));
+  --mermaid-background-color: hsl(var(--background));
+  --mermaid-border-color: hsl(var(--border));
+  --mermaid-text-color: hsl(var(--foreground));
+}
+
+/* Mermaid Theme Overrides - Dark mode */
+@media (prefers-color-scheme: dark) {
+  .markdown-content .mermaid {
+    --mermaid-primary-color: hsl(var(--primary));
+    --mermaid-secondary-color: hsl(var(--secondary));
+    --mermaid-background-color: hsl(var(--background));
+    --mermaid-border-color: hsl(var(--border));
+    --mermaid-text-color: hsl(var(--foreground));
+  }
+
+  /* Adjust Mermaid SVG colors for dark mode */
+  .mermaid-container svg {
+    filter: brightness(0.95);
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .markdown-content h1 {
@@ -317,5 +394,14 @@
 
   .code-block-container pre {
     font-size: 0.8125rem;
+  }
+
+  .mermaid-container {
+    padding: 1rem;
+  }
+
+  .mermaid-container .mermaid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
